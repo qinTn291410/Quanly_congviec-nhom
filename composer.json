@@ -1,0 +1,9 @@
+{
+  "name": "tinhu/task-manager",
+  "description": "Hệ thống Quản lý công việc cá nhân và nhóm - Notion Style",
+  "autoload": {
+    "psr-4": {
+      "Tinhu\\TaskManager\\": "src/"
+    }
+  }
+}

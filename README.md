@@ -1,7 +1,8 @@
 Đã hoàn thành
 
 A. 🧑‍💻 Quản lý tài khoản & người dùng
-  1.Đăng ký / Đăng nhập / Đăng xuất
+  
+1.Đăng ký / Đăng nhập / Đăng xuất
 - Đăng kí tài khoảng cá nhân
 - Đăng nhập qua email & mật khẩu
 - Quên mật khẩu/ Đổi mật khẩu

@@ -17,6 +17,7 @@ date_default_timezone_set($userTimezone);
 $lang = $_SESSION['language'] ?? 'vi';
 
 $menu_home = ($lang === 'en') ? 'Dashboard' : 'Trang chủ';
+$menu_goals = ($lang === 'en') ? 'Goals' : 'Mục tiêu';
 $menu_tasks = ($lang === 'en') ? 'Personal Tasks' : 'Việc cá nhân';
 $menu_team = ($lang === 'en') ? 'Team Workspace' : 'Việc nhóm';
 $menu_logout = ($lang === 'en') ? 'Logout' : 'Đăng xuất';
@@ -59,6 +60,7 @@ if (isset($_SESSION['user_id']) && ($_SESSION['notifications'] ?? 1) == 1) {
         </div>
 
         <a href="index.php?action=dashboard" class="menu-item"><i class="fas fa-home"></i> <?= $menu_home ?></a>
+        <a href="index.php?action=goals" class="menu-item"><i class="fas fa-bullseye"></i> <?= $menu_goals ?></a>
         <a href="index.php?action=tasks" class="menu-item"><i class="fas fa-check-square"></i> <?= $menu_tasks ?></a>
         <a href="index.php?action=teams" class="menu-item"><i class="fas fa-users"></i> <?= $menu_team ?></a>
 

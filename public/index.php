@@ -7,7 +7,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use Tinhu\TaskManager\Controllers\UserController;
 $userController = new UserController(); 
 
-// Lấy action từ URL
 $action = $_GET['action'] ?? 'login';
 
 // BỘ ĐỊNH TUYẾN CHÍNH THỨC VÀ DUY NHẤT
@@ -21,7 +20,6 @@ switch ($action) {
         break;
 
     case 'dashboard':
-        // Gọi file giao diện Dashboard (có chứa Sidebar)
         require_once PROJECT_ROOT . '/views/dashboard.php';
         break;
 
@@ -68,6 +66,37 @@ switch ($action) {
     case 'delete-task':
         $taskController = new \Tinhu\TaskManager\Controllers\TaskController();
         $taskController->delete();
+        break;
+
+    case 'goals':
+        require_once PROJECT_ROOT . '/views/goals/index.php';
+        break;
+    
+    case 'add-goal':
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            require_once PROJECT_ROOT . '/src/Models/GoalModel.php';
+            $goalModel = new \Tinhu\TaskManager\Models\GoalModel();
+            $data = [
+                'user_id'    => $_SESSION['user_id'],
+                'title'      => $_POST['title'],
+                'type'       => $_POST['type'],
+                'start_date' => $_POST['start_date'],
+                'end_date'   => $_POST['end_date']
+            ];
+            $goalModel->createGoal($data);
+            header('Location: index.php?action=goals');
+            exit();
+        }
+        break;
+
+    case 'delete-goal':
+        if (isset($_GET['id'])) {
+            require_once PROJECT_ROOT . '/src/Models/GoalModel.php';
+            $goalModel = new \Tinhu\TaskManager\Models\GoalModel();
+            $goalModel->deleteGoal($_GET['id'], $_SESSION['user_id']);
+        }
+        header('Location: index.php?action=goals');
+        exit();
         break;
 
     default:    

@@ -347,12 +347,12 @@ $goalColors = [
                     </select>
                 </div>
                 <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                    <label>Mục tiêu</label>
-                    <select name="goal" class="form-control">
-                        <option value="Ngắn hạn">Ngắn hạn</option>
-                        <option value="Dài hạn">Dài hạn</option>
-                        <option value="Thói quen">Thói quen</option>
-                        <option value="Không" selected>Không</option>
+                    <label>Mục tiêu liên kết</label>
+                    <select name="goal_id" class="form-control">
+                        <option value="">-- Không gắn mục tiêu --</option>
+                        <?php foreach($userGoals as $g): ?>
+                            <option value="<?= $g['id'] ?>"><?= htmlspecialchars($g['title']) ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
             </div>

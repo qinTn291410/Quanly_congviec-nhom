@@ -43,15 +43,17 @@
                     <option value="Khác" <?= $task['category'] == 'Khác' ? 'selected' : '' ?>>Khác</option>
                 </select>
             </div>
-            <div class="form-group" style="flex: 1;">
-                <label>Mục tiêu</label>
-                <select name="goal" class="form-control">
-                    <option value="Ngắn hạn" <?= $task['goal'] == 'Ngắn hạn' ? 'selected' : '' ?>>Ngắn hạn</option>
-                    <option value="Dài hạn" <?= $task['goal'] == 'Dài hạn' ? 'selected' : '' ?>>Dài hạn</option>
-                    <option value="Thói quen" <?= $task['goal'] == 'Thói quen' ? 'selected' : '' ?>>Thói quen</option>
-                    <option value="Không" <?= $task['goal'] == 'Không' ? 'selected' : '' ?>>Không</option>
-                </select>
-            </div>
+            <div class="form-group">
+            <label>Mục tiêu</label>
+            <select name="goal_id" class="form-control">
+                <option value="">-- Không gắn mục tiêu --</option>
+                <?php foreach($userGoals as $g): ?>
+                    <option value="<?= $g['id'] ?>" <?= (isset($task['goal_id']) && $task['goal_id'] == $g['id']) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($g['title']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
         </div>
 
         <div class="form-group">

@@ -54,8 +54,8 @@ class TaskModel {
 
     // Thêm công việc mới
     public function createTask($data) {
-        $sql = "INSERT INTO tasks (user_id, title, description, start_date, due_date, priority, status, category, goal) 
-                VALUES (:user_id, :title, :description, :start_date, :due_date, :priority, :status, :category, :goal)";
+        $sql = "INSERT INTO tasks (user_id, title, description, start_date, due_date, priority, status, category, goal_id) 
+                VALUES (:user_id, :title, :description, :start_date, :due_date, :priority, :status, :category, :goal_id)";
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute($data);
     }
@@ -75,7 +75,7 @@ class TaskModel {
     // Cập nhật toàn bộ thông tin công việc
     public function updateTask($taskId, $data) {
         $sql = "UPDATE tasks SET title = :title, description = :description, start_date = :start_date, 
-                due_date = :due_date, priority = :priority, category = :category, goal = :goal 
+                due_date = :due_date, priority = :priority, category = :category, goal_id = :goal_id 
                 WHERE id = :id";
         $data['id'] = $taskId;
         $stmt = $this->conn->prepare($sql);

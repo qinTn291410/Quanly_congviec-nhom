@@ -14,9 +14,8 @@ class TaskController {
         
         // --- LOGIC NHẮC VIỆC TỰ ĐỘNG ---
         $upcomingTasks = $this->taskModel->getTasksForReminder($userId);
-if (!empty($upcomingTasks)) {
+    if (!empty($upcomingTasks)) {
     
-    // THAY ĐỔI Ở ĐÂY: Lấy email của chính người đang đăng nhập
     $userEmail = $_SESSION['email']; 
     
     if ($userEmail) { // Kiểm tra nếu có email thì mới gửi
@@ -44,6 +43,9 @@ if (!empty($upcomingTasks)) {
         $doingTasks   = $this->taskModel->getTasksByStatus($userId, 'Doing', $search, $cat, $pri);
         $doneTasks    = $this->taskModel->getTasksByStatus($userId, 'Done', $search, $cat, $pri);
         $pendingTasks = $this->taskModel->getTasksByStatus($userId, 'Pending', $search, $cat, $pri); 
+
+        require_once PROJECT_ROOT . '/src/Models/GoalModel.php';
+        $userGoals = (new \Tinhu\TaskManager\Models\GoalModel())->getGoalsWithProgress($userId);
 
         require_once PROJECT_ROOT . '/views/tasks/index.php';
     }
@@ -84,6 +86,8 @@ if (!empty($upcomingTasks)) {
 
     public function edit() {
         $id = $_GET['id'] ?? 0;
+        $userId = $_SESSION['user_id']; 
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $data = [
                 'title'       => $_POST['title'],
@@ -92,13 +96,18 @@ if (!empty($upcomingTasks)) {
                 'due_date'    => $_POST['due_date'],
                 'priority'    => $_POST['priority'],
                 'category'    => $_POST['category'],
-                'goal'        => $_POST['goal']
+                'goal_id'     => !empty($_POST['goal_id']) ? $_POST['goal_id'] : null 
             ];
             $this->taskModel->updateTask($id, $data);
             header('Location: index.php?action=tasks');
             exit();
         }
+        
         $task = $this->taskModel->getTaskById($id);
+        
+        require_once PROJECT_ROOT . '/src/Models/GoalModel.php';
+        $userGoals = (new \Tinhu\TaskManager\Models\GoalModel())->getGoalsWithProgress($userId);
+
         require_once PROJECT_ROOT . '/views/tasks/edit.php';
     }
 

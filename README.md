@@ -1,7 +1,6 @@
 Đã hoàn thành
 
-<!--  -->
-
+A. 🧑‍💻 Quản lý tài khoản & người dùng
 1.Đăng ký / Đăng nhập / Đăng xuất
 
 - Đăng kí tài khoảng cá nhân
@@ -13,7 +12,8 @@
 - Cập nhận thông tin cá nhân: Tên, ảnh đại diện, email, số điện thoại.
 - Thiết lập thông báo, ngôn ngữ, múi giờ.
 
-  4.Tạo & quản lý công việc
+B. 📋 Quản lý công việc cá nhân
+4.Tạo & quản lý công việc
 
 - Tạo côgn việc: tiêu đề, mô tả, ngày bắt đầu - kết thúc, mức độ ưu tiên, trạng thái.
 - Phân loại theo danh mục / mục tiêu / dự án cá nhân.
@@ -25,6 +25,6 @@
 
 <!------------------------------------------------- -->
 
-    7.Lịch cá nhân & dashboard
+7. Lịch cá nhân & dashboard
 
 - Giao diện tổng quan công việc đang chờ, sắp hết hạn, quá hạn.

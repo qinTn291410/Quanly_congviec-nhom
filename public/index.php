@@ -99,6 +99,11 @@ switch ($action) {
         exit();
         break;
 
+    case 'calendar':
+    $taskController = new \Tinhu\TaskManager\Controllers\TaskController();
+    $taskController->calendar();
+    break;
+
     default:    
         echo "404 - Trang không tồn tại!";
         break;

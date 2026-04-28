@@ -31,7 +31,13 @@ $overdueTasks = $stmt->fetchColumn();
 $goalModel = new \Tinhu\TaskManager\Models\GoalModel();
 $goals = $goalModel->getGoalsWithProgress($userId);
 
-$stmt = $db->prepare("SELECT * FROM tasks WHERE user_id = ? AND status != 'Done' AND due_date != '0000-00-00' ORDER BY due_date ASC LIMIT 5");
+$stmt = $db->prepare("  SELECT * FROM tasks 
+                        WHERE user_id = ? 
+                        AND status != 'Done' 
+                        AND due_date != '0000-00-00' 
+                        AND due_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY) 
+                        ORDER BY due_date ASC 
+                        LIMIT 5");
 $stmt->execute([$userId]);
 $upcomingTasks = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 

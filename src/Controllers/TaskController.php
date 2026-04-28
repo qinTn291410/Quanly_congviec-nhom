@@ -118,5 +118,56 @@ class TaskController {
     }
     header('Location: index.php?action=tasks');
     exit();
-}
+    }
+
+    public function calendar() {
+        $userId = $_SESSION['user_id'];
+        $tasks = $this->taskModel->getAllTasks($userId);
+        
+        $events = [];
+        foreach ($tasks as $t) {
+            // 1. CHO VIỆC DONE "CÚT"
+            if ($t['status'] == 'Done') {
+                continue; 
+            }
+
+            // Mặc định là màu xanh dương nhạt (To-do)
+            $bg = '#e8f3fb'; 
+            $text = '#0b6e99'; 
+
+            // LỖI 1 ĐÃ FIX: Đổi dấu < thành <= để đồng bộ chuẩn "Quá hạn" với Kanban
+            $isOverdue = (strtotime($t['due_date']) <= strtotime(date('Y-m-d'))) && !empty($t['due_date']) && $t['due_date'] != '0000-00-00';
+
+            if ($isOverdue) {
+                $bg = '#fde8e8'; $text = '#eb3639'; // Đỏ nhạt (Quá hạn) 
+            } elseif ($t['status'] == 'Doing') {
+                $bg = '#fdf3c0'; $text = '#d9730d'; // Vàng cam nhạt (Đang tiến hành)
+            } elseif ($t['status'] == 'Pending') {
+                // LỖI 2 ĐÃ FIX: Thêm quy định màu Cam Đất cho các task Pending
+                $bg = '#fdecc8'; $text = '#ad7f11'; 
+            }
+
+            // Xử lý Lịch: Ngày kết thúc phải cộng thêm 1 ngày
+            $endDate = $t['due_date'];
+            if ($endDate && $endDate != '0000-00-00') {
+                $endDate = date('Y-m-d', strtotime($endDate . ' +1 day'));
+            } else {
+                $endDate = $t['start_date'];
+            }
+
+            $events[] = [
+                'id' => $t['id'],
+                'title' => $t['title'],
+                'start' => $t['start_date'],
+                'end' => $endDate,
+                'backgroundColor' => $bg,   
+                'borderColor' => $bg,       
+                'textColor' => $text,       
+                'url' => 'index.php?action=edit-task&id=' . $t['id']
+            ];
+        }
+        $eventsJson = json_encode($events);
+        
+        require_once PROJECT_ROOT . '/views/tasks/calendar.php';
+    }
 }

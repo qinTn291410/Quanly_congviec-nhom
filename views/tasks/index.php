@@ -15,11 +15,6 @@ $catColors = [
     'Tài chính' => ['bg' => '#e3f2fd', 'text' => '#1565c0'], 
     'Khác' => ['bg' => '#f1f1f0', 'text' => '#787774']
 ];
-$goalColors = [
-    'Ngắn hạn' => ['bg' => '#fff3e0', 'text' => '#e65100'], 
-    'Dài hạn' => ['bg' => '#e0f7fa', 'text' => '#006064'], 
-    'Thói quen' => ['bg' => '#fbe9e7', 'text' => '#d84315']
-];
 ?>
 <style>
     .task-card {
@@ -91,14 +86,13 @@ $goalColors = [
                     <?php
                         $cat = $task['category'] ?? 'Khác'; 
                         $catColor = $catColors[$cat] ?? $catColors['Khác'];
-                        $gl = $task['goal'] ?? 'Không';
                     ?>
                     <span style="background: <?= $catColor['bg'] ?>; color: <?= $catColor['text'] ?>; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 600;">
                         <?= htmlspecialchars($cat) ?>
                     </span>
-                    <?php if ($gl !== 'Không'): $glColor = $goalColors[$gl] ?? ['bg' => '#fff', 'text' => '#333']; ?>
-                        <span style="border: 1px solid <?= $glColor['text'] ?>; color: <?= $glColor['text'] ?>; padding: 1px 5px; border-radius: 4px; font-size: 0.65rem; font-weight: 600;">
-                            <?= htmlspecialchars($gl) ?>
+                    <?php if (!empty($task['goal_title'])): ?>
+                        <span style="background: #fdecc8; color: #ad7f11; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; border: 1px solid #f9d99a; font-weight: 600;">
+                            <i class="fas fa-bullseye"></i> <?= htmlspecialchars($task['goal_title']) ?>
                         </span>
                     <?php endif; ?>
                 </div>
@@ -155,14 +149,13 @@ $goalColors = [
                     <?php
                         $cat = $task['category'] ?? 'Khác'; 
                         $catColor = $catColors[$cat] ?? $catColors['Khác'];
-                        $gl = $task['goal'] ?? 'Không';
                     ?>
                     <span style="background: <?= $catColor['bg'] ?>; color: <?= $catColor['text'] ?>; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 600;">
                         <?= htmlspecialchars($cat) ?>
                     </span>
-                    <?php if ($gl !== 'Không'): $glColor = $goalColors[$gl] ?? ['bg' => '#fff', 'text' => '#333']; ?>
-                        <span style="border: 1px solid <?= $glColor['text'] ?>; color: <?= $glColor['text'] ?>; padding: 1px 5px; border-radius: 4px; font-size: 0.65rem; font-weight: 600;">
-                            <?= htmlspecialchars($gl) ?>
+                    <?php if (!empty($task['goal_title'])): ?>
+                        <span style="background: #fdecc8; color: #ad7f11; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; border: 1px solid #f9d99a; font-weight: 600;">
+                            <i class="fas fa-bullseye"></i> <?= htmlspecialchars($task['goal_title']) ?>
                         </span>
                     <?php endif; ?>
                 </div>
@@ -222,14 +215,13 @@ $goalColors = [
                     <?php
                         $cat = $task['category'] ?? 'Khác'; 
                         $catColor = $catColors[$cat] ?? $catColors['Khác'];
-                        $gl = $task['goal'] ?? 'Không';
                     ?>
                     <span style="background: <?= $catColor['bg'] ?>; color: <?= $catColor['text'] ?>; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 600;">
                         <?= htmlspecialchars($cat) ?>
                     </span>
-                    <?php if ($gl !== 'Không'): $glColor = $goalColors[$gl] ?? ['bg' => '#fff', 'text' => '#333']; ?>
-                        <span style="border: 1px solid <?= $glColor['text'] ?>; color: <?= $glColor['text'] ?>; padding: 1px 5px; border-radius: 4px; font-size: 0.65rem; font-weight: 600;">
-                            <?= htmlspecialchars($gl) ?>
+                    <?php if (!empty($task['goal_title'])): ?>
+                        <span style="background: #fdecc8; color: #ad7f11; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; border: 1px solid #f9d99a; font-weight: 600;">
+                            <i class="fas fa-bullseye"></i> <?= htmlspecialchars($task['goal_title']) ?>
                         </span>
                     <?php endif; ?>
                 </div>
@@ -286,14 +278,13 @@ $goalColors = [
                     <?php
                         $cat = $task['category'] ?? 'Khác'; 
                         $catColor = $catColors[$cat] ?? $catColors['Khác'];
-                        $gl = $task['goal'] ?? 'Không';
                     ?>
                     <span style="background: <?= $catColor['bg'] ?>; color: <?= $catColor['text'] ?>; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 600; opacity: 0.8;">
                         <?= htmlspecialchars($cat) ?>
                     </span>
-                    <?php if ($gl !== 'Không'): $glColor = $goalColors[$gl] ?? ['bg' => '#fff', 'text' => '#333']; ?>
-                        <span style="border: 1px solid <?= $glColor['text'] ?>; color: <?= $glColor['text'] ?>; padding: 1px 5px; border-radius: 4px; font-size: 0.65rem; font-weight: 600; opacity: 0.8;">
-                            <?= htmlspecialchars($gl) ?>
+                    <?php if (!empty($task['goal_title'])): ?>
+                        <span style="background: #fdecc8; color: #ad7f11; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; border: 1px solid #f9d99a; font-weight: 600; opacity: 0.8;">
+                            <i class="fas fa-bullseye"></i> <?= htmlspecialchars($task['goal_title']) ?>
                         </span>
                     <?php endif; ?>
                 </div>

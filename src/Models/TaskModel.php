@@ -11,23 +11,26 @@ class TaskModel {
 
     // Lấy tất cả việc của một người dùng theo trạng thái và các bộ lọc
     public function getTasksByStatus($userId, $status, $search = '', $category = '', $priority = '') {
-        $sql = "SELECT * FROM tasks WHERE user_id = :user_id AND status = :status";
+        $sql = "SELECT tasks.*, goals.title as goal_title 
+                FROM tasks 
+                LEFT JOIN goals ON tasks.goal_id = goals.id 
+                WHERE tasks.user_id = :user_id AND tasks.status = :status";
         $params = ['user_id' => $userId, 'status' => $status];
 
         if (!empty($search)) {
-            $sql .= " AND (title LIKE :search OR description LIKE :search)";
+            $sql .= " AND (tasks.title LIKE :search OR tasks.description LIKE :search)";
             $params['search'] = "%$search%";
         }
         if (!empty($category)) {
-            $sql .= " AND category = :category";
+            $sql .= " AND tasks.category = :category";
             $params['category'] = $category;
         }
         if (!empty($priority)) {
-            $sql .= " AND priority = :priority";
+            $sql .= " AND tasks.priority = :priority";
             $params['priority'] = $priority;
         }
 
-        $sql .= " ORDER BY created_at DESC";
+        $sql .= " ORDER BY tasks.created_at DESC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -83,8 +86,15 @@ class TaskModel {
     }
 
     // Hàm xóa công việc
-public function deleteTask($taskId) {
-    $stmt = $this->conn->prepare("DELETE FROM tasks WHERE id = :id");
-    return $stmt->execute(['id' => $taskId]);
-}   
+    public function deleteTask($taskId) {
+        $stmt = $this->conn->prepare("DELETE FROM tasks WHERE id = :id");
+        return $stmt->execute(['id' => $taskId]);
+    }  
+    
+    // Lấy TẤT CẢ công việc để vẽ lên Lịch
+    public function getAllTasks($userId) {
+        $stmt = $this->conn->prepare("SELECT * FROM tasks WHERE user_id = :user_id");
+        $stmt->execute(['user_id' => $userId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

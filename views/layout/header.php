@@ -20,6 +20,7 @@ $menu_home = ($lang === 'en') ? 'Dashboard' : 'Trang chủ';
 $menu_goals = ($lang === 'en') ? 'Goals' : 'Mục tiêu';
 $menu_tasks = ($lang === 'en') ? 'Personal Tasks' : 'Việc cá nhân';
 $menu_team = ($lang === 'en') ? 'Team Workspace' : 'Việc nhóm';
+$menu_calendar = ($lang === 'en') ? 'Calendar' : 'Lịch làm việc';
 $menu_logout = ($lang === 'en') ? 'Logout' : 'Đăng xuất';
 $menu_settings = ($lang === 'en') ? 'System Settings' : 'Cài đặt hệ thống';
 
@@ -63,6 +64,7 @@ if (isset($_SESSION['user_id']) && ($_SESSION['notifications'] ?? 1) == 1) {
         <a href="index.php?action=goals" class="menu-item"><i class="fas fa-bullseye"></i> <?= $menu_goals ?></a>
         <a href="index.php?action=tasks" class="menu-item"><i class="fas fa-check-square"></i> <?= $menu_tasks ?></a>
         <a href="index.php?action=teams" class="menu-item"><i class="fas fa-users"></i> <?= $menu_team ?></a>
+        <a href="index.php?action=calendar" class="menu-item"><i class="far fa-calendar-alt"></i> <?= $menu_calendar ?></a>
 
         <div style="margin-top: auto;">
             <a href="index.php?action=logout" class="menu-item"><i class="fas fa-sign-out-alt"></i> <?= $menu_logout ?></a>

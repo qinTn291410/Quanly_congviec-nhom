@@ -5,5 +5,8 @@
     "psr-4": {
       "Tinhu\\TaskManager\\": "src/"
     }
+  },
+  "require": {
+    "phpmailer/phpmailer": "^7.0"
   }
 }

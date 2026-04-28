@@ -7,4 +7,5 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Tinhu\\TaskManager\\' => array($baseDir . '/src'),
+    'PHPMailer\\PHPMailer\\' => array($vendorDir . '/phpmailer/phpmailer/src'),
 );

@@ -2,6 +2,7 @@
 session_start();
 define('PROJECT_ROOT', dirname(__DIR__));
 require_once PROJECT_ROOT . '/vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use Tinhu\TaskManager\Controllers\UserController;
 $userController = new UserController(); 
@@ -57,6 +58,11 @@ switch ($action) {
     case 'update-task':
         $taskController = new \Tinhu\TaskManager\Controllers\TaskController();
         $taskController->update();
+        break;
+
+    case 'edit-task':
+        $taskController = new \Tinhu\TaskManager\Controllers\TaskController();
+        $taskController->edit();
         break;
     
     case 'delete-task':

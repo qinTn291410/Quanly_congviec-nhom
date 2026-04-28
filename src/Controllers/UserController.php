@@ -24,6 +24,7 @@ class UserController {
                 $_SESSION['fullname'] = $user['fullname'];
                 $_SESSION['language'] = $language;
                 $_SESSION['timezone'] = $timezone;
+                $_SESSION['email'] = $user['email'];
                 header('Location: index.php?action=dashboard'); 
                 exit();
             } else {

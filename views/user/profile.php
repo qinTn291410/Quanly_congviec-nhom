@@ -82,9 +82,26 @@
             <input type="email" name="email" class="profile-input" value="<?= htmlspecialchars($user['email']) ?>" required>
         </div>
 
+        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <div style="flex: 1;">
+                <label class="profile-label">Số điện thoại</label>
+                <input type="text" name="phone" class="profile-input" value="<?= htmlspecialchars($user['phone'] ?? '') ?>" placeholder="Ví dụ: 0987654321">
+            </div>
+            
+            <div style="flex: 1;">
+                <label class="profile-label">Ngày sinh</label>
+                <input type="date" name="dob" class="profile-input" value="<?= htmlspecialchars($user['dob'] ?? '') ?>">
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label class="profile-label">Địa chỉ</label>
+            <input type="text" name="address" class="profile-input" value="<?= htmlspecialchars($user['address'] ?? '') ?>" placeholder="Ví dụ: Quận 1, TP. HCM...">
+        </div>
+
         <div style="margin-bottom: 30px;">
-            <label class="profile-label">Số điện thoại</label>
-            <input type="text" name="phone" class="profile-input" value="<?= htmlspecialchars($user['phone'] ?? '') ?>" placeholder="Sếp chưa cập nhật số điện thoại...">
+            <label class="profile-label">Giới thiệu bản thân (Bio)</label>
+            <textarea name="bio" class="profile-input" rows="3" placeholder="Viết vài dòng giới thiệu về bản thân..." style="resize: vertical;"><?= htmlspecialchars($user['bio'] ?? '') ?></textarea>
         </div>
 
         <button type="submit" style="background: #2383e2; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: 500; font-size: 0.95rem; transition: background 0.2s;">

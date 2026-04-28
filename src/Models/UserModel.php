@@ -49,17 +49,25 @@ class UserModel {
         return $stmt->execute(['password' => $hashed_password, 'email' => $email]);
     }
 
-    // Lấy toàn bộ thông tin user
+// Lấy toàn bộ thông tin user
     public function getUserById($id) {
-        $stmt = $this->conn->prepare("SELECT id, fullname, email, phone, avatar FROM users WHERE id = :id");
+        $stmt = $this->conn->prepare("SELECT id, fullname, email, phone, avatar, dob, address, bio FROM users WHERE id = :id");
         $stmt->execute(['id' => $id]);
         return $stmt->fetch(\PDO::FETCH_ASSOC);
     }
 
     // Cập nhật thông tin
-    public function updateProfile($id, $fullname, $email, $phone, $avatar) {
-        $sql = "UPDATE users SET fullname = :fullname, email = :email, phone = :phone";
-        $params = ['fullname' => $fullname, 'email' => $email, 'phone' => $phone, 'id' => $id];
+    public function updateProfile($id, $fullname, $email, $phone, $avatar, $dob, $address, $bio) {
+        $sql = "UPDATE users SET fullname = :fullname, email = :email, phone = :phone, dob = :dob, address = :address, bio = :bio";
+        $params = [
+            'fullname' => $fullname, 
+            'email' => $email, 
+            'phone' => $phone, 
+            'dob' => $dob,
+            'address' => $address,
+            'bio' => $bio,
+            'id' => $id
+        ];
         
         if ($avatar !== null) {
             $sql .= ", avatar = :avatar";

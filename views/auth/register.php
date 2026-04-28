@@ -37,7 +37,7 @@
         <form action="index.php?action=register" method="POST">
             <div class="form-group">
                 <label>Họ và Tên</label>
-                <input type="text" name="fullname" class="form-control" placeholder="Tên của sếp..." required>
+                <input type="text" name="fullname" class="form-control" placeholder="Tên của bạn..." required>
             </div>
             <div class="form-group">
                 <label>Email</label>

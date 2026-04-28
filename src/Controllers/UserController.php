@@ -79,13 +79,15 @@ class UserController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $fullname = $_POST['fullname'];
             $email = $_POST['email'];
-            $phone = $_POST['phone'];
+            $phone = $_POST['phone'] ?? null;
+            $dob = $_POST['dob'] ?? null;
+            $address = $_POST['address'] ?? null;
+            $bio = $_POST['bio'] ?? null;
             $avatar = null;
 
             // Xử lý upload ảnh
             if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === 0) {
                 $uploadDir = PROJECT_ROOT . '/public/uploads/';
-                // Đổi tên file để không bị trùng (dùng hàm time)
                 $fileName = time() . '_' . basename($_FILES['avatar']['name']); 
                 $targetPath = $uploadDir . $fileName;
                 
@@ -94,16 +96,15 @@ class UserController {
                 }
             }
 
-            if ($this->userModel->updateProfile($userId, $fullname, $email, $phone, $avatar)) {
+            if ($this->userModel->updateProfile($userId, $fullname, $email, $phone, $avatar, $dob, $address, $bio)) {
                 $_SESSION['fullname'] = $fullname; 
-                $message = "Cập nhật thông tin thành công!";
+                $message = "🎉 Cập nhật hồ sơ thành công!";
             } else {
-                $message = "Có lỗi xảy ra!";
+                $message = "❌ Có lỗi xảy ra!";
             }
         }
 
         $user = $this->userModel->getUserById($userId);
-        
         require_once PROJECT_ROOT . '/views/user/profile.php';
     }
 

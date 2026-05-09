@@ -27,7 +27,7 @@
       buttonText: {
         today: 'Hôm nay', month: 'Tháng', week: 'Tuần', day: 'Ngày', list: 'Danh sách'
       },
-      events: <?= $eventsJson ?> // Dữ liệu mình đã "nhào nặn" bên Controller được bơm vào đây
+      events: <?= $eventsJson ?>
     });
     calendar.render();
   });

@@ -104,6 +104,30 @@ switch ($action) {
     $taskController->calendar();
     break;
 
+    case 'teams':
+        require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
+        $teamController = new \Tinhu\TaskManager\Controllers\TeamController();
+        $teamController->index();
+        break;
+
+    case 'create-team':
+        require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
+        $teamController = new \Tinhu\TaskManager\Controllers\TeamController();
+        $teamController->create();
+        break;
+    
+    case 'team-detail':
+        require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
+        $teamController = new \Tinhu\TaskManager\Controllers\TeamController();
+        $teamController->detail();
+        break;
+
+    case 'invite-member':
+        require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
+        $teamController = new \Tinhu\TaskManager\Controllers\TeamController();
+        $teamController->invite();
+        break;
+
     default:    
         echo "404 - Trang không tồn tại!";
         break;

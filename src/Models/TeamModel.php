@@ -86,4 +86,80 @@ class TeamModel {
         $stmtAdd->execute(['team_id' => $teamId, 'user_id' => $user['id']]);
         return true;
     }
+
+    // Lấy danh sách dự án của một nhóm
+    public function getProjectsByTeam($teamId) {
+        $stmt = $this->conn->prepare("SELECT p.*, u.fullname as manager_name 
+                                    FROM projects p 
+                                    LEFT JOIN users u ON p.manager_id = u.id 
+                                    WHERE p.team_id = :team_id 
+                                    ORDER BY p.created_at DESC");
+        $stmt->execute(['team_id' => $teamId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    // Tạo dự án mới cho nhóm
+    public function createProject($teamId, $name, $description, $startDate, $endDate, $managerId) {
+        $sql = "INSERT INTO projects (team_id, name, description, start_date, end_date, manager_id) 
+                VALUES (:team_id, :name, :description, :start_date, :end_date, :manager_id)";
+        $stmt = $this->conn->prepare($sql);
+        return $stmt->execute([
+            'team_id' => $teamId,
+            'name' => $name,
+            'description' => $description,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'manager_id' => $managerId
+        ]);
+    }
+
+    public function getProjectById($projectId) {
+        $stmt = $this->conn->prepare("SELECT * FROM projects WHERE id = :id");
+        $stmt->execute(['id' => $projectId]);
+        return $stmt->fetch(\PDO::FETCH_ASSOC);
+    }
+
+    public function getTeamTasksByStatus($projectId, $status) {
+        $sql = "SELECT tt.*, u.fullname as assignee_name 
+                FROM team_tasks tt 
+                LEFT JOIN users u ON tt.assigned_to = u.id 
+                WHERE tt.project_id = :project_id AND tt.status = :status 
+                ORDER BY tt.created_at DESC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute(['project_id' => $projectId, 'status' => $status]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    // Tạo task nhóm mới
+    public function createTeamTask($data) {
+        $sql = "INSERT INTO team_tasks (project_id, assigned_to, title, description, status, priority, due_date) 
+                VALUES (:project_id, :assigned_to, :title, :description, 'Backlog', :priority, :due_date)";
+        $stmt = $this->conn->prepare($sql);
+        return $stmt->execute($data);
+    }
+
+    public function updateTeamTaskStatus($taskId, $newStatus) {
+        $stmt = $this->conn->prepare("UPDATE team_tasks SET status = :status WHERE id = :id");
+        return $stmt->execute(['status' => $newStatus, 'id' => $taskId]);
+    }
+
+    public function getTeamTaskById($taskId) {
+        $stmt = $this->conn->prepare("SELECT * FROM team_tasks WHERE id = :id");
+        $stmt->execute(['id' => $taskId]);
+        return $stmt->fetch(\PDO::FETCH_ASSOC);
+    }
+
+    public function updateTeamTask($taskId, $data) {
+        $sql = "UPDATE team_tasks SET title = :title, description = :description, 
+                assigned_to = :assigned_to, priority = :priority, due_date = :due_date 
+                WHERE id = :id";
+        $data['id'] = $taskId;
+        $stmt = $this->conn->prepare($sql);
+        return $stmt->execute($data);
+    }
+
+    public function deleteTeamTask($taskId) {
+        $stmt = $this->conn->prepare("DELETE FROM team_tasks WHERE id = :id");
+        return $stmt->execute(['id' => $taskId]);
+    }
 }

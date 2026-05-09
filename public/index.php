@@ -128,6 +128,42 @@ switch ($action) {
         $teamController->invite();
         break;
 
+    case 'create-project':
+        require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
+        $teamController = new \Tinhu\TaskManager\Controllers\TeamController();
+        $teamController->createProject();
+        break;
+
+    case 'project-kanban':
+        require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
+        $teamController = new \Tinhu\TaskManager\Controllers\TeamController();
+        $teamController->projectKanban();
+        break;
+
+    case 'add-team-task':
+        require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
+        $teamController = new \Tinhu\TaskManager\Controllers\TeamController();
+        $teamController->addTeamTask();
+        break;
+
+    case 'update-team-task':
+        require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
+        $teamController = new \Tinhu\TaskManager\Controllers\TeamController();
+        $teamController->updateTeamTask();
+        break;
+
+    case 'edit-team-task':
+        require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
+        $teamController = new \Tinhu\TaskManager\Controllers\TeamController();
+        $teamController->editTeamTask();
+        break;
+
+    case 'delete-team-task':
+        require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
+        $teamController = new \Tinhu\TaskManager\Controllers\TeamController();
+        $teamController->deleteTeamTask();
+        break;
+
     default:    
         echo "404 - Trang không tồn tại!";
         break;

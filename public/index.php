@@ -163,6 +163,33 @@ switch ($action) {
         $teamController = new \Tinhu\TaskManager\Controllers\TeamController();
         $teamController->deleteTeamTask();
         break;
+    
+    case 'team-task-detail':
+        require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
+        $teamController = new \Tinhu\TaskManager\Controllers\TeamController();
+        $teamController->taskDetail();
+        break;
+
+    case 'add-team-comment':
+        require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
+        $teamController = new \Tinhu\TaskManager\Controllers\TeamController();
+        $teamController->addComment();
+        break;
+
+    case 'kick-member':
+        require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
+        (new \Tinhu\TaskManager\Controllers\TeamController())->kickMember();
+        break;
+
+    case 'delete-project':
+        require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
+        (new \Tinhu\TaskManager\Controllers\TeamController())->removeProject();
+        break;
+
+    case 'delete-team':
+        require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
+        (new \Tinhu\TaskManager\Controllers\TeamController())->removeTeam();
+        break;
 
     default:    
         echo "404 - Trang không tồn tại!";

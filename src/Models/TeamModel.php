@@ -119,14 +119,33 @@ class TeamModel {
         return $stmt->fetch(\PDO::FETCH_ASSOC);
     }
 
-    public function getTeamTasksByStatus($projectId, $status) {
+    public function getTeamTasksByStatus($projectId, $status, $assigneeId = '', $sort = '') {
         $sql = "SELECT tt.*, u.fullname as assignee_name 
                 FROM team_tasks tt 
                 LEFT JOIN users u ON tt.assigned_to = u.id 
-                WHERE tt.project_id = :project_id AND tt.status = :status 
-                ORDER BY tt.created_at DESC";
+                WHERE tt.project_id = :project_id AND tt.status = :status";
+        
+        $params = ['project_id' => $projectId, 'status' => $status];
+
+        if ($assigneeId !== '') {
+            if ($assigneeId === 'unassigned') {
+                $sql .= " AND tt.assigned_to IS NULL";
+            } else {
+                $sql .= " AND tt.assigned_to = :assignee_id";
+                $params['assignee_id'] = $assigneeId;
+            }
+        }
+
+        if ($sort === 'deadline_asc') {
+            $sql .= " ORDER BY tt.due_date ASC";
+        } elseif ($sort === 'deadline_desc') {
+            $sql .= " ORDER BY tt.due_date DESC";
+        } else {
+            $sql .= " ORDER BY tt.created_at DESC";
+        }
+
         $stmt = $this->conn->prepare($sql);
-        $stmt->execute(['project_id' => $projectId, 'status' => $status]);
+        $stmt->execute($params);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
@@ -161,5 +180,46 @@ class TeamModel {
     public function deleteTeamTask($taskId) {
         $stmt = $this->conn->prepare("DELETE FROM team_tasks WHERE id = :id");
         return $stmt->execute(['id' => $taskId]);
+    }
+
+    public function getTaskComments($taskId) {
+        $sql = "SELECT c.*, u.fullname 
+                FROM team_task_comments c 
+                JOIN users u ON c.user_id = u.id 
+                WHERE c.task_id = :task_id 
+                ORDER BY c.created_at ASC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute(['task_id' => $taskId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function addTaskComment($taskId, $userId, $content, $fileUrl = null) {
+        $sql = "INSERT INTO team_task_comments (task_id, user_id, content, file_url) 
+                VALUES (:task_id, :user_id, :content, :file_url)";
+        $stmt = $this->conn->prepare($sql);
+        return $stmt->execute([
+            'task_id' => $taskId,
+            'user_id' => $userId,
+            'content' => $content,
+            'file_url' => $fileUrl
+        ]);
+    }
+
+    public function removeTeamMember($teamId, $userId) {
+        $stmt = $this->conn->prepare("DELETE FROM team_members WHERE team_id = :team_id AND user_id = :user_id");
+        return $stmt->execute(['team_id' => $teamId, 'user_id' => $userId]);
+    }
+
+    public function deleteProject($projectId) {
+        $this->conn->prepare("DELETE FROM team_tasks WHERE project_id = :id")->execute(['id' => $projectId]);
+        $stmt = $this->conn->prepare("DELETE FROM projects WHERE id = :id");
+        return $stmt->execute(['id' => $projectId]);
+    }
+
+    public function deleteTeam($teamId) {
+        $this->conn->prepare("DELETE FROM team_members WHERE team_id = :id")->execute(['id' => $teamId]);
+        $this->conn->prepare("DELETE FROM projects WHERE team_id = :id")->execute(['id' => $teamId]);
+        $stmt = $this->conn->prepare("DELETE FROM teams WHERE id = :id");
+        return $stmt->execute(['id' => $teamId]);
     }
 }

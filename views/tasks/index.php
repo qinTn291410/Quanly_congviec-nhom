@@ -41,30 +41,43 @@ $catColors = [
     </button>
 </div>
 
-<form action="index.php" method="GET" style="display: flex; gap: 10px; margin-bottom: 25px; background: #f7f7f5; padding: 15px; border-radius: 8px;">
-    <input type="hidden" name="action" value="tasks">
+<div style="background: #f7f7f5; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; border: 1px solid #e3e2e0;">
+    <span style="font-weight: 500; font-size: 0.9rem; color: #787774; min-width: max-content;">
+        <i class="fas fa-filter"></i> Lọc & Tìm kiếm:
+    </span>
     
-    <input type="text" name="search" placeholder="Tìm tên việc..." value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" 
-           style="flex: 2; padding: 8px 12px; border: 1px solid #e3e2e0; border-radius: 6px;">
-    
-    <select name="category" style="flex: 1; padding: 8px; border: 1px solid #e3e2e0; border-radius: 6px;">
-        <option value="">Tất cả danh mục</option>
-        <option value="Công việc" <?= ($_GET['category']??'') == 'Công việc' ? 'selected' : '' ?>>Công việc</option>
-        <option value="Học tập" <?= ($_GET['category']??'') == 'Học tập' ? 'selected' : '' ?>>Học tập</option>
-        <option value="Sức khỏe" <?= ($_GET['category']??'') == 'Sức khỏe' ? 'selected' : '' ?>>Sức khỏe</option>
-        <option value="Tài chính" <?= ($_GET['category']??'') == 'Tài chính' ? 'selected' : '' ?>>Tài chính</option>
-    </select>
+    <form action="index.php" method="GET" style="display: flex; gap: 15px; margin: 0; width: 100%; align-items: center;">
+        <input type="hidden" name="action" value="tasks">
+        
+        <input type="text" name="search" placeholder="Tìm tên việc..." 
+                value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>" 
+                style="flex: 1; padding: 6px 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.85rem;">
+        
+        <select name="category" onchange="this.form.submit()" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.85rem;">
+            <option value="">Tất cả danh mục</option>
+            <option value="Công việc" <?= (isset($_GET['category']) && $_GET['category'] == 'Công việc') ? 'selected' : '' ?>>Công việc</option>
+            <option value="Học tập" <?= (isset($_GET['category']) && $_GET['category'] == 'Học tập') ? 'selected' : '' ?>>Học tập</option>
+            <option value="Sức khỏe" <?= (isset($_GET['category']) && $_GET['category'] == 'Sức khỏe') ? 'selected' : '' ?>>Sức khỏe</option>
+            <option value="Tài chính" <?= (isset($_GET['category']) && $_GET['category'] == 'Tài chính') ? 'selected' : '' ?>>Tài chính</option>
+            <option value="Khác" <?= (isset($_GET['category']) && $_GET['category'] == 'Khác') ? 'selected' : '' ?>>Khác</option>
+        </select>
 
-    <select name="priority" style="flex: 1; padding: 8px; border: 1px solid #e3e2e0; border-radius: 6px;">
-        <option value="">Mọi ưu tiên</option>
-        <option value="High" <?= ($_GET['priority']??'') == 'High' ? 'selected' : '' ?>>Cao</option>
-        <option value="Medium" <?= ($_GET['priority']??'') == 'Medium' ? 'selected' : '' ?>>Trung bình</option>
-        <option value="Low" <?= ($_GET['priority']??'') == 'Low' ? 'selected' : '' ?>>Thấp</option>
-    </select>
+        <select name="priority" onchange="this.form.submit()" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.85rem;">
+            <option value="">Mọi ưu tiên</option>
+            <option value="High" <?= (isset($_GET['priority']) && $_GET['priority'] == 'High') ? 'selected' : '' ?>>Cao</option>
+            <option value="Medium" <?= (isset($_GET['priority']) && $_GET['priority'] == 'Medium') ? 'selected' : '' ?>>Trung bình</option>
+            <option value="Low" <?= (isset($_GET['priority']) && $_GET['priority'] == 'Low') ? 'selected' : '' ?>>Thấp</option>
+        </select>
+        
+        <button type="submit" style="background: #2383e2; color: white; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+            Lọc
+        </button>
 
-    <button type="submit" style="background: #2383e2; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer;">Lọc</button>
-    <a href="index.php?action=tasks" style="text-decoration: none; color: #787774; padding-top: 8px; font-size: 0.9rem;">Xóa lọc</a>
-</form>
+        <?php if(!empty($_GET['search']) || !empty($_GET['category']) || !empty($_GET['priority'])): ?>
+            <a href="index.php?action=tasks" style="font-size: 0.85rem; color: #eb3639; text-decoration: none;">Xóa lọc</a>
+        <?php endif; ?>
+    </form>
+</div>
 
 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; align-items: start;">
     

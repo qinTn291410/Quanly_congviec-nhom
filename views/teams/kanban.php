@@ -24,6 +24,34 @@
     </button>
     <?php endif; ?>
 </div>
+<div style="background: #f7f7f5; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; border: 1px solid #e3e2e0;">
+    <span style="font-weight: 500; font-size: 0.9rem; color: #787774;"><i class="fas fa-filter"></i> Lọc & Sắp xếp:</span>
+    
+    <form action="index.php" method="GET" style="display: flex; gap: 15px; margin: 0; width: 100%;">
+        <input type="hidden" name="action" value="project-kanban">
+        <input type="hidden" name="id" value="<?= $project['id'] ?>">
+        
+        <select name="assignee" onchange="this.form.submit()" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.85rem;">
+            <option value="">Tất cả thành viên</option>
+            <option value="unassigned" <?= (isset($_GET['assignee']) && $_GET['assignee'] === 'unassigned') ? 'selected' : '' ?>>Chưa giao ai</option>
+            <?php foreach($members as $m): ?>
+                <option value="<?= $m['id'] ?>" <?= (isset($_GET['assignee']) && $_GET['assignee'] == $m['id']) ? 'selected' : '' ?>>
+                    Việc của <?= htmlspecialchars($m['fullname']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+
+        <select name="sort" onchange="this.form.submit()" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.85rem;">
+            <option value="">Sắp xếp mặc định</option>
+            <option value="deadline_asc" <?= (isset($_GET['sort']) && $_GET['sort'] === 'deadline_asc') ? 'selected' : '' ?>>Deadline: Gần nhất trước</option>
+            <option value="deadline_desc" <?= (isset($_GET['sort']) && $_GET['sort'] === 'deadline_desc') ? 'selected' : '' ?>>Deadline: Xa nhất trước</option>
+        </select>
+        
+        <?php if(!empty($_GET['assignee']) || !empty($_GET['sort'])): ?>
+            <a href="index.php?action=project-kanban&id=<?= $project['id'] ?>" style="font-size: 0.85rem; color: #eb3639; text-decoration: none; padding-top: 6px;">Xóa bộ lọc</a>
+        <?php endif; ?>
+    </form>
+</div>
 
 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; align-items: start;">
     
@@ -38,7 +66,10 @@
                 $isOverdue = (!empty($t['due_date']) && strtotime($t['due_date']) < strtotime(date('Y-m-d')));
             ?>
             <div class="task-card">
-                <div style="font-weight: 500; margin-bottom: 8px;"><?= htmlspecialchars($t['title']) ?></div>
+                <a href="index.php?action=team-task-detail&task_id=<?= $t['id'] ?>&project_id=<?= $project['id'] ?>" 
+                   style="font-weight: 500; margin-bottom: 8px; display: block; color: #37352f; text-decoration: none;">
+                    <?= htmlspecialchars($t['title']) ?>
+                </a>
                 
                 <div style="font-size: 0.75rem; color: #787774; margin-bottom: 8px; display: flex; justify-content: space-between;">
                     <span><i class="fas fa-user-circle"></i> <?= $t['assignee_name'] ? htmlspecialchars($t['assignee_name']) : 'Chưa giao' ?></span>
@@ -78,7 +109,10 @@
                 $isOverdue = (!empty($t['due_date']) && strtotime($t['due_date']) < strtotime(date('Y-m-d')));
             ?>
             <div class="task-card">
-                <div style="font-weight: 500; margin-bottom: 8px; color: #0b6e99;"><?= htmlspecialchars($t['title']) ?></div>
+                <a href="index.php?action=team-task-detail&task_id=<?= $t['id'] ?>&project_id=<?= $project['id'] ?>" 
+                   style="font-weight: 500; margin-bottom: 8px; display: block; color: #0b6e99; text-decoration: none;">
+                    <?= htmlspecialchars($t['title']) ?>
+                </a>
                 
                 <div style="font-size: 0.75rem; color: #787774; margin-bottom: 8px; display: flex; justify-content: space-between;">
                     <span><i class="fas fa-user-circle"></i> <?= $t['assignee_name'] ? htmlspecialchars($t['assignee_name']) : 'Chưa giao' ?></span>
@@ -115,7 +149,10 @@
         </div>
         <?php foreach ($reviewTasks as $t): ?>
             <div class="task-card" style="border-left: 3px solid #d9730d;">
-                <div style="font-weight: 500; margin-bottom: 8px; color: #ad7f11;"><?= htmlspecialchars($t['title']) ?></div>
+                <a href="index.php?action=team-task-detail&task_id=<?= $t['id'] ?>&project_id=<?= $project['id'] ?>" 
+                   style="font-weight: 500; margin-bottom: 8px; display: block; color: #ad7f11; text-decoration: none;">
+                    <?= htmlspecialchars($t['title']) ?>
+                </a>
                 
                 <div style="font-size: 0.75rem; color: #787774; margin-bottom: 8px; display: flex; justify-content: space-between;">
                     <span><i class="fas fa-user-circle"></i> <?= $t['assignee_name'] ? htmlspecialchars($t['assignee_name']) : 'Chưa giao' ?></span>
@@ -146,7 +183,10 @@
         </div>
         <?php foreach ($doneTasks as $t): ?>
             <div class="task-card" style="opacity: 0.6; border-left: 3px solid #0f7b6c;">
-                <div style="font-weight: 500; margin-bottom: 8px; text-decoration: line-through;"><?= htmlspecialchars($t['title']) ?></div>
+                <a href="index.php?action=team-task-detail&task_id=<?= $t['id'] ?>&project_id=<?= $project['id'] ?>" 
+                   style="font-weight: 500; margin-bottom: 8px; display: block; color: #37352f; text-decoration: line-through;">
+                    <?= htmlspecialchars($t['title']) ?>
+                </a>
                 <div style="font-size: 0.75rem; color: #787774; margin-bottom: 10px;">
                     <i class="fas fa-check-circle" style="color: #0f7b6c;"></i> <?= $t['assignee_name'] ? htmlspecialchars($t['assignee_name']) : 'Chưa giao' ?>
                 </div>

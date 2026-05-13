@@ -18,12 +18,20 @@
             <div style="background: white; border: 1px solid #e3e2e0; border-radius: 10px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: transform 0.2s;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <h3 style="margin: 0 0 10px 0; font-size: 1.2rem; color: #37352f;"><?= htmlspecialchars($team['name']) ?></h3>
-                    <?php if($team['role'] == 'Leader'): ?>
-                        <span style="background: #fde8e8; color: #eb3639; padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold;">Leader</span>
-                    <?php else: ?>
-                        <span style="background: #e8f3fb; color: #0b6e99; padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold;">Member</span>
-                    <?php endif; ?>
-                </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <?php if($team['role'] == 'Leader'): ?>
+                            <span style="background: #fde8e8; color: #eb3639; padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold;">Leader</span>
+                            <a href="index.php?action=delete-team&id=<?= $team['id'] ?>" 
+                                onclick="return confirm('Sếp có chắc chắn muốn giải tán nhóm này không? Toàn bộ dự án sẽ bay màu!');" 
+                                style="color: #eb3639; font-size: 0.85rem; text-decoration: none;" title="Xóa nhóm">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        <?php else: ?>
+                            <span style="background: #e8f3fb; color: #0b6e99; padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold;">Member</span>
+                        <?php endif; ?>
+                    </div>
+                    </div>
                 
                 <p style="color: #787774; font-size: 0.9rem; margin-bottom: 20px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                     <?= htmlspecialchars($team['description']) ?>

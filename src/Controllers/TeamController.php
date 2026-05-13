@@ -100,12 +100,13 @@ class TeamController {
             }
         }
         $canEdit = ($currentUserRole == 'Leader' || $project['manager_id'] == $userId);
-        // ------------------------------------------------
+        $filterAssignee = $_GET['assignee'] ?? '';
+        $sort = $_GET['sort'] ?? '';
 
-        $backlogTasks = $this->teamModel->getTeamTasksByStatus($projectId, 'Backlog');
-        $inProgressTasks = $this->teamModel->getTeamTasksByStatus($projectId, 'In Progress');
-        $reviewTasks = $this->teamModel->getTeamTasksByStatus($projectId, 'Review');
-        $doneTasks = $this->teamModel->getTeamTasksByStatus($projectId, 'Done');
+        $backlogTasks = $this->teamModel->getTeamTasksByStatus($projectId, 'Backlog', $filterAssignee, $sort);
+        $inProgressTasks = $this->teamModel->getTeamTasksByStatus($projectId, 'In Progress', $filterAssignee, $sort);
+        $reviewTasks = $this->teamModel->getTeamTasksByStatus($projectId, 'Review', $filterAssignee, $sort);
+        $doneTasks = $this->teamModel->getTeamTasksByStatus($projectId, 'Done', $filterAssignee, $sort);
 
         require_once PROJECT_ROOT . '/views/teams/kanban.php';
     }
@@ -171,6 +172,79 @@ class TeamController {
             $this->teamModel->deleteTeamTask($taskId);
         }
         header("Location: index.php?action=project-kanban&id=" . $projectId);
+        exit();
+    }
+
+    // Mở trang Chi tiết Task (Xem bình luận)
+    public function taskDetail() {
+        $taskId = $_GET['task_id'] ?? 0;
+        $projectId = $_GET['project_id'] ?? 0;
+        
+        $task = $this->teamModel->getTeamTaskById($taskId);
+        $project = $this->teamModel->getProjectById($projectId);
+        
+        if (!$task) { echo "Công việc không tồn tại!"; exit(); }
+
+        $comments = $this->teamModel->getTaskComments($taskId);
+        require_once PROJECT_ROOT . '/views/teams/task_detail.php';
+    }
+
+    // Xử lý gửi bình luận & Upload file đính kèm
+    public function addComment() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $taskId = $_POST['task_id'];
+            $projectId = $_POST['project_id'];
+            $userId = $_SESSION['user_id'];
+            $content = trim($_POST['content']);
+            $fileUrl = null;
+
+            if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] === 0) {
+                // Tạo thư mục nếu chưa có
+                $uploadDir = PROJECT_ROOT . '/public/uploads/teams/';
+                if (!is_dir($uploadDir)) { mkdir($uploadDir, 0777, true); }
+                
+                $fileName = time() . '_' . basename($_FILES['attachment']['name']);
+                if (move_uploaded_file($_FILES['attachment']['tmp_name'], $uploadDir . $fileName)) {
+                    $fileUrl = $fileName;
+                }
+            }
+
+            if (!empty($content) || $fileUrl) {
+                $this->teamModel->addTaskComment($taskId, $userId, $content, $fileUrl);
+            }
+            
+            header("Location: index.php?action=team-task-detail&task_id=$taskId&project_id=$projectId");
+            exit();
+        }
+    }
+
+    // Kick member ra khỏi nhóm
+    public function kickMember() {
+        $teamId = $_GET['team_id'] ?? 0;
+        $userId = $_GET['user_id'] ?? 0;
+        if ($teamId && $userId && $userId != $_SESSION['user_id']) {
+            $this->teamModel->removeTeamMember($teamId, $userId);
+        }
+        header("Location: index.php?action=team-detail&id=" . $teamId);
+        exit();
+    }
+
+    public function removeProject() {
+        $projectId = $_GET['project_id'] ?? 0;
+        $teamId = $_GET['team_id'] ?? 0;
+        if ($projectId) {
+            $this->teamModel->deleteProject($projectId);
+        }
+        header("Location: index.php?action=team-detail&id=" . $teamId);
+        exit();
+    }
+
+    public function removeTeam() {
+        $teamId = $_GET['id'] ?? 0;
+        if ($teamId) {
+            $this->teamModel->deleteTeam($teamId);
+        }
+        header("Location: index.php?action=teams");
         exit();
     }
 }

@@ -233,4 +233,35 @@ class TeamModel {
         $stmt->execute(['project_id' => $projectId]);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    //Lấy danh sách công việc trễ hạn / sắp đến hạn (chưa Done)
+    public function getProjectDeadlineTasks($projectId) {
+        $sql = "SELECT tt.*, u.fullname as assignee_name 
+                FROM team_tasks tt 
+                LEFT JOIN users u ON tt.assigned_to = u.id 
+                WHERE tt.project_id = :project_id 
+                AND tt.status != 'Done' 
+                AND tt.due_date IS NOT NULL 
+                AND tt.due_date != '0000-00-00'
+                ORDER BY tt.due_date ASC 
+                LIMIT 5"; // Lấy 5 task gấp nhất
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute(['project_id' => $projectId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    //Báo cáo thống kê tiến độ theo từng thành viên
+    public function getProjectMemberStats($projectId) {
+        $sql = "SELECT u.fullname, 
+                    COUNT(tt.id) as total_tasks,
+                    SUM(CASE WHEN tt.status = 'Done' THEN 1 ELSE 0 END) as done_tasks
+                FROM team_tasks tt
+                LEFT JOIN users u ON tt.assigned_to = u.id
+                WHERE tt.project_id = :project_id
+                GROUP BY tt.assigned_to, u.fullname
+                ORDER BY total_tasks DESC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute(['project_id' => $projectId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

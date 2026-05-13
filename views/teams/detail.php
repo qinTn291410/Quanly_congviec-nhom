@@ -1,7 +1,6 @@
 <?php require_once PROJECT_ROOT . '/views/layout/header.php'; ?>
 
 <?php
-// TỰ ĐỘNG KIỂM TRA QUYỀN LEADER CỦA SẾP
 $isLeader = false;
 foreach($members as $m) {
     if($m['id'] == $_SESSION['user_id'] && $m['role'] == 'Leader') {
@@ -53,9 +52,9 @@ foreach($members as $m) {
 
                         <?php if ($isLeader && $m['id'] != $_SESSION['user_id']): ?>
                             <a href="index.php?action=kick-member&team_id=<?= $team['id'] ?>&user_id=<?= $m['id'] ?>" 
-                               onclick="return confirm('Đá thanh niên này ra khỏi nhóm?');" 
-                               style="color: #eb3639; font-size: 0.8rem; text-decoration: none; margin-left: 15px;" title="Đuổi khỏi nhóm">
-                               <i class="fas fa-user-times"></i> Đuổi
+                                onclick="return confirm('Đá thanh niên này ra khỏi nhóm?');" 
+                                style="color: #eb3639; font-size: 0.8rem; text-decoration: none; margin-left: 15px;" title="Đuổi khỏi nhóm">
+                                <i class="fas fa-user-times"></i> Đuổi
                             </a>
                         <?php endif; ?>
                     </td>
@@ -91,13 +90,13 @@ foreach($members as $m) {
             <p style="color: #787774;">Chưa có dự án nào được tạo.</p>
         <?php else: ?>
             <?php foreach($projects as $p): ?>
-                <div style="position: relative; border: 1px solid #e3e2e0; border-radius: 8px; padding: 20px; transition: 0.2s;">
+                <div style="position: relative; border: 1px solid #e3e2e0; border-radius: 8px; padding: 20px; transition: 0.2s; background: white;">
                     
                     <?php if ($isLeader): ?>
                         <a href="index.php?action=delete-project&project_id=<?= $p['id'] ?>&team_id=<?= $team['id'] ?>" 
-                           onclick="return confirm('Xóa dự án này? Các task bên trong cũng sẽ bốc hơi!');" 
-                           style="position: absolute; top: 15px; right: 15px; color: #eb3639; text-decoration: none;" title="Xóa Dự án">
-                           <i class="fas fa-trash"></i>
+                            onclick="return confirm('Xóa dự án này? Các task bên trong cũng sẽ bốc hơi!');" 
+                            style="position: absolute; top: 15px; right: 15px; color: #eb3639; text-decoration: none;" title="Xóa Dự án">
+                            <i class="fas fa-trash"></i>
                         </a>
                     <?php endif; ?>
 
@@ -111,6 +110,16 @@ foreach($members as $m) {
                         <i class="far fa-calendar-alt"></i> <?= date('d/m/Y', strtotime($p['start_date'])) ?> - <?= date('d/m/Y', strtotime($p['end_date'])) ?>
                     </div>
                     
+                    <div style="margin-bottom: 15px; background: #fdfdfc; padding: 10px; border-radius: 6px; border: 1px solid #f0f0f0;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.8rem;">
+                            <span style="color: #787774; font-weight: 500;">Tiến độ dự án</span>
+                            <span style="font-weight: bold; color: <?= ($p['percent'] == 100) ? '#0f7b6c' : '#2383e2' ?>;"><?= $p['percent'] ?>%</span>
+                        </div>
+                        <div style="background: #e3e2e0; border-radius: 10px; height: 6px; width: 100%; overflow: hidden;">
+                            <div style="background: <?= ($p['percent'] == 100) ? '#0f7b6c' : '#2383e2' ?>; height: 100%; width: <?= $p['percent'] ?>%; transition: width 0.4s ease;"></div>
+                        </div>
+                    </div>
+
                     <a href="index.php?action=project-kanban&id=<?= $p['id'] ?>" style="display: block; text-align: center; background: #f7f7f5; color: #37352f; text-decoration: none; padding: 8px; border-radius: 4px; font-size: 0.85rem; font-weight: 500; border: 1px solid #e3e2e0;">
                         Vào Kanban Nhóm &rarr;
                     </a>

@@ -12,13 +12,12 @@ class TaskController {
     public function index() {
         $userId = $_SESSION['user_id'];
         
-        // --- LOGIC NHẮC VIỆC TỰ ĐỘNG ---
         $upcomingTasks = $this->taskModel->getTasksForReminder($userId);
     if (!empty($upcomingTasks)) {
     
     $userEmail = $_SESSION['email']; 
     
-    if ($userEmail) { // Kiểm tra nếu có email thì mới gửi
+    if ($userEmail) {
         $count = 0;
         foreach ($upcomingTasks as $t) {
             $msg = "<h3>Hạn chót công việc: " . htmlspecialchars($t['title']) . "</h3>"
@@ -42,7 +41,17 @@ class TaskController {
         $todoTasks    = $this->taskModel->getTasksByStatus($userId, 'To-do', $search, $cat, $pri);
         $doingTasks   = $this->taskModel->getTasksByStatus($userId, 'Doing', $search, $cat, $pri);
         $doneTasks    = $this->taskModel->getTasksByStatus($userId, 'Done', $search, $cat, $pri);
-        $pendingTasks = $this->taskModel->getTasksByStatus($userId, 'Pending', $search, $cat, $pri); 
+        $pendingTasks = $this->taskModel->getTasksByStatus($userId, 'Pending', $search, $cat, $pri);
+        
+        //Tính dữ liệu cá nhân để hiển thị biểu đồ tiến độ
+        $chartData = [
+            'To-do' => count($todoTasks),
+            'Doing' => count($doingTasks),
+            'Pending' => count($pendingTasks),
+            'Done' => count($doneTasks)
+        ];
+        $totalPersonalTasks = array_sum($chartData);
+        $percentPersonalDone = ($totalPersonalTasks > 0) ? round(($chartData['Done'] / $totalPersonalTasks) * 100) : 0;
 
         require_once PROJECT_ROOT . '/src/Models/GoalModel.php';
         $userGoals = (new \Tinhu\TaskManager\Models\GoalModel())->getGoalsWithProgress($userId);
@@ -126,24 +135,19 @@ class TaskController {
         
         $events = [];
         foreach ($tasks as $t) {
-            // 1. CHO VIỆC DONE "CÚT"
             if ($t['status'] == 'Done') {
                 continue; 
             }
 
-            // Mặc định là màu xanh dương nhạt (To-do)
             $bg = '#e8f3fb'; 
             $text = '#0b6e99'; 
-
-            // LỖI 1 ĐÃ FIX: Đổi dấu < thành <= để đồng bộ chuẩn "Quá hạn" với Kanban
             $isOverdue = (strtotime($t['due_date']) <= strtotime(date('Y-m-d'))) && !empty($t['due_date']) && $t['due_date'] != '0000-00-00';
 
             if ($isOverdue) {
-                $bg = '#fde8e8'; $text = '#eb3639'; // Đỏ nhạt (Quá hạn) 
+                $bg = '#fde8e8'; $text = '#eb3639';
             } elseif ($t['status'] == 'Doing') {
-                $bg = '#fdf3c0'; $text = '#d9730d'; // Vàng cam nhạt (Đang tiến hành)
+                $bg = '#fdf3c0'; $text = '#d9730d';
             } elseif ($t['status'] == 'Pending') {
-                // LỖI 2 ĐÃ FIX: Thêm quy định màu Cam Đất cho các task Pending
                 $bg = '#fdecc8'; $text = '#ad7f11'; 
             }
 

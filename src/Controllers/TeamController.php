@@ -45,6 +45,21 @@ class TeamController {
         $members = $this->teamModel->getTeamMembers($teamId);
         $projects = $this->teamModel->getProjectsByTeam($teamId);
         
+        // Tính % hoàn thành cho mỗi dự án để hiển thị bên ngoài
+        foreach ($projects as &$p) {
+            $stats = $this->teamModel->getProjectStats($p['id']);
+            $total = 0;
+            $done = 0;
+            foreach ($stats as $s) {
+                $total += $s['count'];
+                if ($s['status'] == 'Done') {
+                    $done = $s['count'];
+                }
+            }
+            $p['percent'] = ($total > 0) ? round(($done / $total) * 100) : 0;
+        }
+        unset($p); // Xóa tham chiếu
+        
         require_once PROJECT_ROOT . '/views/teams/detail.php';
     }
 
@@ -120,6 +135,8 @@ class TeamController {
         
         $totalTasks = array_sum($chartData);
         $percentDone = ($totalTasks > 0) ? round(($chartData['Done'] / $totalTasks) * 100) : 0;
+        $deadlineTasks = $this->teamModel->getProjectDeadlineTasks($projectId);
+        $memberStats = $this->teamModel->getProjectMemberStats($projectId);
         
         require_once PROJECT_ROOT . '/views/teams/kanban.php';
     }

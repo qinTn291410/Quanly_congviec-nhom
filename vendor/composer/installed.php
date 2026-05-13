@@ -3,7 +3,7 @@
         'name' => 'tinhu/task-manager',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'aae2762e4433be8a44fae73082a6b49e622834da',
+        'reference' => '1cfbc196baa77f1026d62848026d22f266dca641',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -22,7 +22,7 @@
         'tinhu/task-manager' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'aae2762e4433be8a44fae73082a6b49e622834da',
+            'reference' => '1cfbc196baa77f1026d62848026d22f266dca641',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

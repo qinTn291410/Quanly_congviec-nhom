@@ -64,7 +64,7 @@ class TaskController {
                 'priority'    => $_POST['priority'],
                 'status'      => 'To-do',
                 'category'    => $_POST['category'] ?? 'Khác',
-                'goal'        => $_POST['goal'] ?? 'Không'
+                'goal_id'     => !empty($_POST['goal_id']) ? $_POST['goal_id'] : null
             ];
 
             if ($this->taskModel->createTask($data)) {

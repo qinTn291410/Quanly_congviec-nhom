@@ -1,16 +1,12 @@
-Đã hoàn thành
+1. 🧑‍💻 Quản lý tài khoản & người dùng
+   Đăng ký / Đăng nhập / Đăng
+   Quản lý hồ sơ cá nhân
 
-🧑‍💻 Quản lý tài khoản & người dùng.
-
-1. Đăng ký / Đăng nhập / Đăng xuất
-
-- Đăng kí tài khoảng cá nhân
-- Đăng nhập qua email & mật khẩu
-- Quên mật khẩu/ Đổi mật khẩu
-
-2. Quản lý hồ sơ cá nhân
-
-- Cập nhận thông tin cá nhân: Tên, ảnh đại diện, email, số điện thoại.
-- Thiết lập thông báo, ngôn ngữ, múi giờ.
-
-B. 📋 Quản lý công việc cá nhân.( Đã xong)
+2. 📋 Quản lý công việc cá nhân
+   Tạo & quản lý công việc
+   Theo dõi tiến độ & nhắc nhở
+   Quản lý mục tiêu cá nhân
+   Lịch cá nhân & dashboard
+3. 🤝 Quản lý công việc nhóm / dự án
+   Tạo & quản lý nhóm
+   Tạo & quản lý dự án

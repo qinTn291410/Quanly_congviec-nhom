@@ -2,6 +2,7 @@
 namespace Tinhu\TaskManager\Controllers;
 
 use Tinhu\TaskManager\Models\UserModel;
+use Tinhu\TaskManager\Core\MailHelper; 
 
 class UserController {
     private $userModel;
@@ -22,8 +23,8 @@ class UserController {
             if ($user && password_verify($password, $user['password'])) {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['fullname'] = $user['fullname'];
-                $_SESSION['language'] = $language;
-                $_SESSION['timezone'] = $timezone;
+                $_SESSION['language'] = $language ?? 'vi'; 
+                $_SESSION['timezone'] = $timezone ?? 'Asia/Ho_Chi_Minh';
                 $_SESSION['email'] = $user['email'];
                 header('Location: index.php?action=dashboard'); 
                 exit();
@@ -48,6 +49,14 @@ class UserController {
             } else {
                 if ($this->userModel->createUser($fullname, $email, $password)) {
                     $success = 'Đăng ký thành công! Hãy đăng nhập.';
+                    
+                    // --- GỌI LỆNH GỬI MAIL CHÀO MỪNG ---
+                    MailHelper::sendMail(
+                        $email, 
+                        "Chào mừng bạn gia nhập Task Manager!", 
+                        "<h3>Chào bạn $fullname,</h3><p>Tài khoản của bạn đã được khởi tạo thành công trên hệ thống. Bắt đầu dọn dẹp task ngay thôi!</p>"
+                    );
+                    
                 } else {
                     $error = 'Email này đã được sử dụng!';
                 }
@@ -56,6 +65,7 @@ class UserController {
         require_once PROJECT_ROOT . '/views/auth/register.php';
     }
 
+    // XỬ LÝ QUÊN / ĐỔI MẬT KHẨU
     public function forgotPassword() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = $_POST['email'];
@@ -63,7 +73,15 @@ class UserController {
 
             if ($this->userModel->checkEmailExists($email)) {
                 $this->userModel->resetPassword($email, $new_password);
-                echo "<script>alert('Đổi mật khẩu thành công! Mời sếp đăng nhập lại.'); window.location.href='index.php?action=login';</script>";
+                
+                //GỌI LỆNH GỬI MAIL CẢNH BÁO BẢO MẬT
+                MailHelper::sendMail(
+                    $email, 
+                    "Cảnh báo bảo mật: Mật khẩu đã thay đổi", 
+                    "<h3>Cảnh báo,</h3><p>Mật khẩu tài khoản Task Manager của bạn vừa được thay đổi thành công. Nếu bạn không thực hiện hành động này, vui lòng liên hệ Admin ngay lập tức!</p>"
+                );
+
+                echo "<script>alert('Đổi mật khẩu thành công! Mời bạn đăng nhập lại.'); window.location.href='index.php?action=login';</script>";
             } else {
                 echo "<script>alert('Email này chưa được đăng ký trong hệ thống!'); window.history.back();</script>";
             }
@@ -73,6 +91,7 @@ class UserController {
         }
     }
 
+    // XỬ LÝ CẬP NHẬT HỒ SƠ
     public function profile() {
         $userId = $_SESSION['user_id'];
         $message = '';
@@ -86,7 +105,6 @@ class UserController {
             $bio = $_POST['bio'] ?? null;
             $avatar = null;
 
-            // Xử lý upload ảnh
             if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === 0) {
                 $uploadDir = PROJECT_ROOT . '/public/uploads/';
                 $fileName = time() . '_' . basename($_FILES['avatar']['name']); 
@@ -99,9 +117,9 @@ class UserController {
 
             if ($this->userModel->updateProfile($userId, $fullname, $email, $phone, $avatar, $dob, $address, $bio)) {
                 $_SESSION['fullname'] = $fullname; 
-                $message = "🎉 Cập nhật hồ sơ thành công!";
+                $message = "Cập nhật hồ sơ thành công!";
             } else {
-                $message = "❌ Có lỗi xảy ra!";
+                $message = "Có lỗi xảy ra!";
             }
         }
 
@@ -109,6 +127,7 @@ class UserController {
         require_once PROJECT_ROOT . '/views/user/profile.php';
     }
 
+    // XỬ LÝ CÀI ĐẶT
     public function settings() {
         $userId = $_SESSION['user_id'];
         $message = '';
@@ -129,7 +148,6 @@ class UserController {
         }
 
         $settings = $this->userModel->getSettings($userId);
-        
         require_once PROJECT_ROOT . '/views/user/settings.php';
     }
 }

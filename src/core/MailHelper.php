@@ -21,7 +21,7 @@ class MailHelper {
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; 
             $mail->Port       = 465;
 
-            $mail->setFrom('email_cua_sep@gmail.com', 'Task Manager System');
+            $mail->setFrom('tinhuynhba1289@gmail.com', 'Task Manager System');
             $mail->addAddress($toEmail);
             $mail->CharSet = 'UTF-8';
 

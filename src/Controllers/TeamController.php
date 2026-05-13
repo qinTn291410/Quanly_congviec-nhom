@@ -108,6 +108,19 @@ class TeamController {
         $reviewTasks = $this->teamModel->getTeamTasksByStatus($projectId, 'Review', $filterAssignee, $sort);
         $doneTasks = $this->teamModel->getTeamTasksByStatus($projectId, 'Done', $filterAssignee, $sort);
 
+        //LẤY DỮ LIỆU CHO BIỂU ĐỒ
+        $stats = $this->teamModel->getProjectStats($projectId);
+        $chartData = ['Backlog' => 0, 'In Progress' => 0, 'Review' => 0, 'Done' => 0];
+        
+        foreach ($stats as $s) {
+            if (array_key_exists($s['status'], $chartData)) {
+                $chartData[$s['status']] = $s['count'];
+            }
+        }
+        
+        $totalTasks = array_sum($chartData);
+        $percentDone = ($totalTasks > 0) ? round(($chartData['Done'] / $totalTasks) * 100) : 0;
+        
         require_once PROJECT_ROOT . '/views/teams/kanban.php';
     }
 

@@ -222,4 +222,15 @@ class TeamModel {
         $stmt = $this->conn->prepare("DELETE FROM teams WHERE id = :id");
         return $stmt->execute(['id' => $teamId]);
     }
+
+    //THỐNG KÊ TIẾN ĐỘ DỰ ÁN
+    public function getProjectStats($projectId) {
+        $sql = "SELECT status, COUNT(*) as count 
+                FROM team_tasks 
+                WHERE project_id = :project_id 
+                GROUP BY status";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute(['project_id' => $projectId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

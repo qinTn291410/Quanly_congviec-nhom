@@ -24,6 +24,7 @@
     </button>
     <?php endif; ?>
 </div>
+
 <div style="background: #f7f7f5; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; border: 1px solid #e3e2e0;">
     <span style="font-weight: 500; font-size: 0.9rem; color: #787774;"><i class="fas fa-filter"></i> Lọc & Sắp xếp:</span>
     
@@ -53,6 +54,39 @@
     </form>
 </div>
 
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 30px;">
+    <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e3e2e0; display: flex; align-items: center; gap: 25px;">
+        <div style="width: 120px; height: 120px; position: relative;">
+            <canvas id="progressChart"></canvas>
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.2rem; font-weight: bold; color: #0f7b6c;">
+                <?= $percentDone ?? 0 ?>%
+            </div>
+        </div>
+        <div>
+            <h4 style="margin: 0 0 5px 0; color: #37352f; font-size: 1rem;">Tiến độ tổng thể</h4>
+            <p style="margin: 0; font-size: 0.85rem; color: #787774;">Dựa trên <strong><?= $totalTasks ?? 0 ?></strong> công việc</p>
+        </div>
+    </div>
+
+    <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e3e2e0; display: flex; justify-content: space-around; align-items: center;">
+        <div style="text-align: center;">
+            <div style="font-size: 1.8rem; font-weight: bold; color: #37352f;"><?= $chartData['Backlog'] ?? 0 ?></div>
+            <div style="font-size: 0.85rem; color: #787774; margin-top: 5px; font-weight: 500;">Chờ làm (Backlog)</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 1.8rem; font-weight: bold; color: #0b6e99;"><?= $chartData['In Progress'] ?? 0 ?></div>
+            <div style="font-size: 0.85rem; color: #787774; margin-top: 5px; font-weight: 500;">Đang làm (In Progress)</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 1.8rem; font-weight: bold; color: #ad7f11;"><?= $chartData['Review'] ?? 0 ?></div>
+            <div style="font-size: 0.85rem; color: #787774; margin-top: 5px; font-weight: 500;">Chờ duyệt (Review)</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 1.8rem; font-weight: bold; color: #0f7b6c;"><?= $chartData['Done'] ?? 0 ?></div>
+            <div style="font-size: 0.85rem; color: #787774; margin-top: 5px; font-weight: 500;">Hoàn thành (Done)</div>
+        </div>
+    </div>
+</div>
 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; align-items: start;">
     
     <div class="kanban-column">
@@ -250,5 +284,44 @@
         </form>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Backlog', 'In Progress', 'Review', 'Done'],
+            datasets: [{
+                data: [
+                    <?= $chartData['Backlog'] ?? 0 ?>, 
+                    <?= $chartData['In Progress'] ?? 0 ?>, 
+                    <?= $chartData['Review'] ?? 0 ?>, 
+                    <?= $chartData['Done'] ?? 0 ?>
+                ],
+                backgroundColor: ['#e3e2e0', '#d3e5ef', '#fdecc8', '#dbeddb'],
+                hoverBackgroundColor: ['#cfcecc', '#b9d5e5', '#fbd58e', '#c1e1c1'],
+                borderWidth: 0,
+                cutout: '75%'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ' ' + context.label + ': ' + context.raw + ' task';
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
 
 <?php require_once PROJECT_ROOT . '/views/layout/footer.php'; ?>

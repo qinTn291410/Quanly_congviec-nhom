@@ -14,11 +14,15 @@
     .pri-High { color: #eb3639; font-weight: 600; }
     .pri-Medium { color: #d9730d; font-weight: 600; }
     .pri-Low { color: #0f7b6c; font-weight: 600; }
-    /* Thanh cuộn tàng hình cho gọn */
     .custom-scroll::-webkit-scrollbar { width: 6px; }
     .custom-scroll::-webkit-scrollbar-track { background: transparent; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #e3e2e0; border-radius: 4px; }
     .custom-scroll::-webkit-scrollbar-thumb:hover { background: #cfcecc; }
+    @media print {
+        .sidebar, button, a, form, .custom-scroll { display: none !important; }
+        .main-content { margin-left: 0 !important; width: 100% !important; }
+        body { background: white; }
+    }
 </style>
 
 <div style="margin-bottom: 15px;">
@@ -60,6 +64,15 @@
 </div>
 
 <?php if ($view == 'dashboard'): ?>
+    <div style="text-align: right; margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button onclick="window.print()" style="background: #eb3639; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: 500; box-shadow: 0 2px 5px rgba(235,54,57,0.3);">
+            <i class="fas fa-file-pdf"></i> In báo cáo PDF
+        </button>
+        
+        <a href="index.php?action=export-excel&project_id=<?= $project['id'] ?>" style="background: #0f7b6c; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-size: 0.95rem; font-weight: 500; box-shadow: 0 2px 5px rgba(15,123,108,0.3);">
+            <i class="fas fa-file-excel"></i> Xuất báo cáo Excel
+        </a>
+    </div>
     <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 25px; margin-bottom: 25px;">
         
         <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #f0f0f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); text-align: center;">

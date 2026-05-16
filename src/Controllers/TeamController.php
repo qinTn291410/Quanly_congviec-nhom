@@ -343,4 +343,41 @@ class TeamController {
             exit();
         }
     }
+
+    public function exportExcel() {
+        $projectId = $_GET['project_id'] ?? 0;
+        $db = \Tinhu\TaskManager\Core\Database::getInstance()->getConnection();
+        
+        $stmtProj = $db->prepare("SELECT name FROM projects WHERE id = ?");
+        $stmtProj->execute([$projectId]);
+        $projectName = $stmtProj->fetchColumn();
+
+        $stmt = $db->prepare("SELECT t.title, u.fullname, t.status, t.priority, t.due_date 
+                            FROM team_tasks t 
+                            LEFT JOIN users u ON t.assigned_to = u.id 
+                            WHERE t.project_id = ? ORDER BY t.status, t.due_date");
+        $stmt->execute([$projectId]);
+        $tasks = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        $filename = "Bao_Cao_Tien_Do_" . preg_replace('/[^a-zA-Z0-9_ -]/s', '', $projectName) . ".csv";
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=' . $filename);
+        
+        $output = fopen('php://output', 'w');
+        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+        
+        fputcsv($output, ['Tên công việc', 'Người phụ trách', 'Trạng thái', 'Độ ưu tiên', 'Hạn chót']);
+
+        foreach ($tasks as $row) {
+            fputcsv($output, [
+                $row['title'],
+                $row['fullname'] ?: 'Chưa phân công',
+                $row['status'],
+                $row['priority'],
+                (!empty($row['due_date']) && $row['due_date'] != '0000-00-00') ? date('d/m/Y', strtotime($row['due_date'])) : 'Không có'
+            ]);
+        }
+        fclose($output);
+        exit();
+    }
 }

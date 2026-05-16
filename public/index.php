@@ -231,6 +231,12 @@ switch ($action) {
         echo json_encode(['status' => 'empty']);
         exit;
 
+    case 'export-excel':
+        require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
+        $exportCtrl = new \Tinhu\TaskManager\Controllers\TeamController();
+        $exportCtrl->exportExcel();
+        break;
+
     default:    
         echo "404 - Trang không tồn tại!";
         break;

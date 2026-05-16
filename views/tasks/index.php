@@ -81,6 +81,20 @@ $catColors = [
             return strtotime($a['due_date']) - strtotime($b['due_date']);
         });
         $upcomingPersonal = array_slice($upcomingPersonal, 0, 5); // Lấy 5 cái gấp nhất
+
+        // 3. Tính toán cho Khối 5 (Biểu đồ 7 ngày tới)
+        $timelineLabels = [];
+        $timelineData = [];
+        for($i = 0; $i < 7; $i++) {
+            $d = date('Y-m-d', strtotime("+$i days"));
+            $timelineLabels[] = date('d/m', strtotime($d));
+            
+            $count = 0;
+            foreach(array_merge($todoTasks, $doingTasks, $pendingTasks) as $t) {
+                if ($t['due_date'] == $d) $count++;
+            }
+            $timelineData[] = $count;
+        }
     ?>
 
     <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 25px; margin-bottom: 25px;">
@@ -170,11 +184,19 @@ $catColors = [
         </div>
     </div>
 
+    <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #f0f0f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 25px;">
+        <h4 style="margin: 0 0 20px 0; color: #37352f; font-size: 1.1rem;"><i class="fas fa-chart-line" style="color: #2383e2;"></i> 5. Khối lượng công việc theo thời gian (7 ngày tới)</h4>
+        <div style="height: 250px; width: 100%;">
+            <canvas id="timelineChart"></canvas>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const ctx = document.getElementById('personalProgressChart').getContext('2d');
-        new Chart(ctx, {
+        // Biểu đồ tròn
+        const ctxPie = document.getElementById('personalProgressChart').getContext('2d');
+        new Chart(ctxPie, {
             type: 'doughnut',
             data: {
                 labels: ['Cần làm', 'Đang làm', 'Tạm hoãn', 'Xong'],
@@ -186,6 +208,35 @@ $catColors = [
                 }]
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+
+        // Biểu đồ đường (Khối lượng công việc 7 ngày)
+        const ctxTimeline = document.getElementById('timelineChart').getContext('2d');
+        new Chart(ctxTimeline, {
+            type: 'line',
+            data: {
+                labels: <?= json_encode($timelineLabels) ?>,
+                datasets: [{
+                    label: 'Số việc đến hạn',
+                    data: <?= json_encode($timelineData) ?>,
+                    borderColor: '#2383e2',
+                    backgroundColor: 'rgba(35, 131, 226, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4, // Đường cong
+                    pointBackgroundColor: '#2383e2',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                    x: { grid: { display: false } }
+                },
+                plugins: { legend: { display: false } }
+            }
         });
     });
     </script>

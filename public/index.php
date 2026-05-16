@@ -170,10 +170,22 @@ switch ($action) {
         $teamController->taskDetail();
         break;
 
+    case 'add-project-comment':
+        require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
+        $chatController = new \Tinhu\TaskManager\Controllers\TeamController();
+        $chatController->addProjectComment();
+        break;
+
     case 'add-team-comment':
         require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
         $teamController = new \Tinhu\TaskManager\Controllers\TeamController();
         $teamController->addComment();
+        break;
+
+    case 'add-team-message':
+        require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
+        $teamMsgController = new \Tinhu\TaskManager\Controllers\TeamController();
+        $teamMsgController->addTeamMessage();
         break;
 
     case 'kick-member':

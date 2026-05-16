@@ -173,4 +173,74 @@ foreach($members as $m) {
     </div>
 </div>
 
+<div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e3e2e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-top: 30px; margin-bottom: 30px;">
+    <div style="margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px;">
+        <h2 style="margin: 0; color: #37352f; font-size: 1.4rem;"><i class="fas fa-comments" style="color: #2383e2;"></i> Kênh Chat Chung Của Nhóm</h2>
+        <p style="margin: 5px 0 0 0; color: #787774; font-size: 0.95rem;">Không gian trao đổi của tất cả các thành viên trong nhóm.</p>
+    </div>
+
+    <div id="chatBox" class="custom-scroll" style="height: 400px; overflow-y: auto; padding-right: 15px; margin-bottom: 20px; display: flex; flex-direction: column;">
+        <?php if(empty($teamComments)): ?>
+            <div style="text-align: center; margin: auto; color: #787774;">
+                <i class="far fa-comments" style="font-size: 3rem; color: #e3e2e0; margin-bottom: 15px;"></i>
+                <p>Nhóm chưa có tin nhắn nào.</p>
+            </div>
+        <?php else: ?>
+            <?php foreach($teamComments as $c): 
+                $isMe = ($c['user_id'] == $_SESSION['user_id']);
+            ?>
+                <div style="display: flex; gap: 12px; margin-bottom: 20px; <?= $isMe ? 'flex-direction: row-reverse;' : '' ?>">
+                    <div style="background: <?= $isMe ? '#2383e2' : '#e3e2e0' ?>; color: <?= $isMe ? 'white' : '#37352f' ?>; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
+                        <?= strtoupper(substr($c['fullname'], 0, 1)) ?>
+                    </div>
+                    <div style="max-width: 75%;">
+                        <div style="font-size: 0.8rem; color: #787774; margin-bottom: 4px; <?= $isMe ? 'text-align: right;' : '' ?>">
+                            <strong><?= $isMe ? 'Bạn' : htmlspecialchars($c['fullname']) ?></strong> • <?= date('H:i d/m', strtotime($c['created_at'])) ?>
+                        </div>
+                        <div style="background: <?= $isMe ? '#e8f3fb' : '#f7f7f5' ?>; padding: 12px 16px; border-radius: 12px; font-size: 0.95rem; color: #37352f; border: 1px solid <?= $isMe ? '#b9d5e5' : '#e3e2e0' ?>;">
+                            <?php if(!empty($c['content'])) echo nl2br(htmlspecialchars($c['content'])); ?>
+                            <?php if(!empty($c['file_url'])): ?>
+                                <div style="margin-top: <?= !empty($c['content'])?'10px':'0'?>; padding-top: <?= !empty($c['content'])?'10px':'0'?>; border-top: <?= !empty($c['content'])?'1px dashed #ccc':'none'?>;">
+                                    <a href="/task_manager/public/uploads/teams/<?= htmlspecialchars($c['file_url']) ?>" target="_blank" style="color: #2383e2; text-decoration: none; font-weight: 500;"><i class="fas fa-paperclip"></i> <?= htmlspecialchars($c['file_url']) ?></a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+
+    <form action="index.php?action=add-team-message" method="POST" enctype="multipart/form-data" style="background: #fdfdfc; padding: 15px; border-radius: 8px; border: 1px solid #e3e2e0;">
+        <input type="hidden" name="team_id" value="<?= $team['id'] ?>">
+        <textarea name="content" rows="2" placeholder="Nhập tin nhắn cho nhóm..." style="width: 100%; border: 1px solid #ccc; border-radius: 6px; padding: 10px; margin-bottom: 10px; resize: none; font-family: inherit;"></textarea>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <input type="file" name="attachment" style="font-size: 0.85rem;">
+            <button type="submit" style="background: #2383e2; color: white; border: none; padding: 8px 25px; border-radius: 6px; cursor: pointer; font-weight: 500;"><i class="fas fa-paper-plane"></i> Gửi tin</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var chatBox = document.getElementById("chatBox");
+        if (chatBox) {
+            chatBox.scrollTop = chatBox.scrollHeight;
+            setInterval(function() {
+                fetch(window.location.href)
+                .then(response => response.text())
+                .then(html => {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, 'text/html');
+                    var newChatBox = doc.getElementById('chatBox');
+                    if (newChatBox && chatBox.innerHTML !== newChatBox.innerHTML) {
+                        chatBox.innerHTML = newChatBox.innerHTML;
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    }
+                }).catch(err => console.log('Lỗi:', err));
+            }, 3000); 
+        }
+    });
+</script>
+
 <?php require_once PROJECT_ROOT . '/views/layout/footer.php'; ?>

@@ -44,6 +44,7 @@ class TeamController {
 
         $members = $this->teamModel->getTeamMembers($teamId);
         $projects = $this->teamModel->getProjectsByTeam($teamId);
+        $teamComments = $this->teamModel->getTeamComments($teamId);
         
         // Tính % hoàn thành cho mỗi dự án để hiển thị bên ngoài
         foreach ($projects as &$p) {
@@ -137,7 +138,21 @@ class TeamController {
         $percentDone = ($totalTasks > 0) ? round(($chartData['Done'] / $totalTasks) * 100) : 0;
         $deadlineTasks = $this->teamModel->getProjectDeadlineTasks($projectId);
         $memberStats = $this->teamModel->getProjectMemberStats($projectId);
-        
+        $projectComments = $this->teamModel->getProjectComments($projectId);
+
+        $dueSoon = 0;
+        foreach(array_merge($backlogTasks, $inProgressTasks, $reviewTasks) as $t) {
+            if (!empty($t['due_date']) && $t['due_date'] != '0000-00-00') {
+                $diff = (strtotime($t['due_date']) - strtotime(date('Y-m-d'))) / 86400;
+                if ($diff >= 0 && $diff <= 2) { // Hạn trong hôm nay, ngày mai hoặc mốt
+                    $dueSoon++;
+                }
+            }
+        }
+        if ($dueSoon > 0 && !isset($_SESSION['deadline_alerted_'.$projectId])) {
+            $_SESSION['system_alert'] = "NHẮC NHỞ DEADLINE:\\n\\nDự án này đang có $dueSoon công việc sắp đến hạn (trong vòng 48h tới). Hãy vào xử lý ngay để tránh bị quá hạn nhé!";
+            $_SESSION['deadline_alerted_'.$projectId] = true;
+        }
         require_once PROJECT_ROOT . '/views/teams/kanban.php';
     }
 
@@ -153,6 +168,7 @@ class TeamController {
                 'due_date'    => !empty($_POST['due_date']) ? $_POST['due_date'] : null
             ];
             $this->teamModel->createTeamTask($data);
+            $_SESSION['system_alert'] = "Đã phân công việc: '" . $data['title'] . "' thành công!";
             header("Location: index.php?action=project-kanban&id=" . $projectId);
             exit();
         }
@@ -165,6 +181,7 @@ class TeamController {
         
         if ($taskId && $projectId) {
             $this->teamModel->updateTeamTaskStatus($taskId, $status);
+            $_SESSION['system_alert'] = "Đã cập nhật tiến độ công việc sang: " . strtoupper($status);
         }
         header("Location: index.php?action=project-kanban&id=" . $projectId);
         exit();
@@ -243,7 +260,7 @@ class TeamController {
                 $this->teamModel->addTaskComment($taskId, $userId, $content, $fileUrl);
             }
             
-            header("Location: index.php?action=team-task-detail&task_id=$taskId&project_id=$projectId");
+            header("Location: index.php?action=team-task-detail&task_id=$taskId&project_id=$projectId#chatBox");
             exit();
         }
     }
@@ -276,5 +293,53 @@ class TeamController {
         }
         header("Location: index.php?action=teams");
         exit();
+    }
+
+    //XỬ LÝ CHAT DỰ ÁN CHUNG
+    public function addProjectComment() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $projectId = $_POST['project_id'];
+            $userId = $_SESSION['user_id'];
+            $content = trim($_POST['content']);
+            $fileUrl = null;
+
+            if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] === 0) {
+                $uploadDir = PROJECT_ROOT . '/public/uploads/teams/';
+                if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+                $fileName = time() . '_' . basename($_FILES['attachment']['name']);
+                if (move_uploaded_file($_FILES['attachment']['tmp_name'], $uploadDir . $fileName)) {
+                    $fileUrl = $fileName;
+                }
+            }
+            if (!empty($content) || $fileUrl) {
+                $this->teamModel->addProjectComment($projectId, $userId, $content, $fileUrl);
+            }
+            header("Location: index.php?action=project-kanban&id=$projectId&view=chat#chatBox");
+            exit();
+        }
+    }
+
+        //XỬ LÝ CHAT NHÓM CHUNG
+    public function addTeamMessage() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $teamId = $_POST['team_id'];
+            $userId = $_SESSION['user_id'];
+            $content = trim($_POST['content']);
+            $fileUrl = null;
+
+            if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] === 0) {
+                $uploadDir = PROJECT_ROOT . '/public/uploads/teams/';
+                if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+                $fileName = time() . '_' . basename($_FILES['attachment']['name']);
+                if (move_uploaded_file($_FILES['attachment']['tmp_name'], $uploadDir . $fileName)) {
+                    $fileUrl = $fileName;
+                }
+            }
+            if (!empty($content) || $fileUrl) {
+                $this->teamModel->addTeamComment($teamId, $userId, $content, $fileUrl);
+            }
+            header("Location: index.php?action=team-detail&id=$teamId#chatBox");
+            exit();
+        }
     }
 }

@@ -264,4 +264,30 @@ class TeamModel {
         $stmt->execute(['project_id' => $projectId]);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    public function getProjectComments($projectId) {
+        $sql = "SELECT pc.*, u.fullname FROM project_comments pc LEFT JOIN users u ON pc.user_id = u.id WHERE pc.project_id = ? ORDER BY pc.created_at ASC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([$projectId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function addProjectComment($projectId, $userId, $content, $fileUrl = null) {
+        $sql = "INSERT INTO project_comments (project_id, user_id, content, file_url) VALUES (?, ?, ?, ?)";
+        $stmt = $this->conn->prepare($sql);
+        return $stmt->execute([$projectId, $userId, $content, $fileUrl]);
+    }
+
+    public function getTeamComments($teamId) {
+        $sql = "SELECT tc.*, u.fullname FROM team_comments tc LEFT JOIN users u ON tc.user_id = u.id WHERE tc.team_id = ? ORDER BY tc.created_at ASC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([$teamId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function addTeamComment($teamId, $userId, $content, $fileUrl = null) {
+        $sql = "INSERT INTO team_comments (team_id, user_id, content, file_url) VALUES (?, ?, ?, ?)";
+        $stmt = $this->conn->prepare($sql);
+        return $stmt->execute([$teamId, $userId, $content, $fileUrl]);
+    }
 }

@@ -13,7 +13,7 @@
             <i class="fas fa-comments" style="color: #2383e2;"></i> Thảo luận công việc
         </h2>
 
-        <div id="chatBox" style="flex-grow: 1; max-height: 500px; overflow-y: auto; padding-right: 15px; margin-bottom: 20px;" class="custom-scroll">
+        <div style="flex-grow: 1; max-height: 500px; overflow-y: auto; padding-right: 15px; margin-bottom: 20px;" class="custom-scroll">
             <?php if(empty($comments)): ?>
                 <div style="text-align: center; padding: 30px 0; color: #787774;">
                     <i class="far fa-comment-dots" style="font-size: 2.5rem; color: #e3e2e0; margin-bottom: 10px;"></i>
@@ -47,14 +47,6 @@
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                var chatBox = document.getElementById("chatBox");
-                if (chatBox) {
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                }
-            });
-        </script>
 
         <form action="index.php?action=add-team-comment" method="POST" enctype="multipart/form-data" style="background: #fdfdfc; padding: 15px; border-radius: 8px; border: 1px solid #e3e2e0;">
             <input type="hidden" name="task_id" value="<?= $task['id'] ?>">

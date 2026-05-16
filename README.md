@@ -12,3 +12,4 @@
    Tạo & quản lý dự án,
    Quản lý công việc nhóm,
    Theo dõi tiến độ dự án
+   Quản lý trao đổi & cộng tác

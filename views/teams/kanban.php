@@ -1,9 +1,12 @@
 <?php require_once PROJECT_ROOT . '/views/layout/header.php'; ?>
+<?php $view = $_GET['view'] ?? 'kanban'; ?>
 
-<?php 
-// Đọc trạng thái Tab hiện tại trên URL (Mặc định là Kanban nếu không có)
-$view = $_GET['view'] ?? 'kanban'; 
-?>
+<?php if (isset($_SESSION['system_alert'])): ?>
+    <script>
+        alert("<?= $_SESSION['system_alert'] ?>");
+    </script>
+    <?php unset($_SESSION['system_alert']); ?>
+<?php endif; ?>
 
 <style>
     .task-card { background: #ffffff; border: 1px solid #e3e2e0; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04); transition: all 0.2s ease; }
@@ -37,16 +40,22 @@ $view = $_GET['view'] ?? 'kanban';
 
 <div style="display: flex; gap: 35px; border-bottom: 2px solid #e3e2e0; margin-bottom: 30px;">
     <a href="index.php?action=project-kanban&id=<?= $project['id'] ?>&view=kanban" 
-       style="text-decoration: none; font-size: 1.05rem; font-weight: 500; padding-bottom: 12px; margin-bottom: -2px; transition: 0.2s; 
-              color: <?= ($view == 'kanban') ? '#37352f' : '#787774' ?>; 
-              border-bottom: <?= ($view == 'kanban') ? '3px solid #2383e2' : '3px solid transparent' ?>;">
+        style="text-decoration: none; font-size: 1.05rem; font-weight: 500; padding-bottom: 12px; margin-bottom: -2px; transition: 0.2s; 
+            color: <?= ($view == 'kanban') ? '#37352f' : '#787774' ?>; 
+            border-bottom: <?= ($view == 'kanban') ? '3px solid #2383e2' : '3px solid transparent' ?>;">
         <i class="fas fa-layer-group"></i> Bảng Kanban
     </a>
     <a href="index.php?action=project-kanban&id=<?= $project['id'] ?>&view=dashboard" 
-       style="text-decoration: none; font-size: 1.05rem; font-weight: 500; padding-bottom: 12px; margin-bottom: -2px; transition: 0.2s; 
-              color: <?= ($view == 'dashboard') ? '#37352f' : '#787774' ?>; 
-              border-bottom: <?= ($view == 'dashboard') ? '3px solid #2383e2' : '3px solid transparent' ?>;">
+        style="text-decoration: none; font-size: 1.05rem; font-weight: 500; padding-bottom: 12px; margin-bottom: -2px; transition: 0.2s; 
+            color: <?= ($view == 'dashboard') ? '#37352f' : '#787774' ?>; 
+            border-bottom: <?= ($view == 'dashboard') ? '3px solid #2383e2' : '3px solid transparent' ?>;">
         <i class="fas fa-chart-pie"></i> Dashboard Thống Kê
+    </a>
+    <a href="index.php?action=project-kanban&id=<?= $project['id'] ?>&view=chat" 
+        style="text-decoration: none; font-size: 1.05rem; font-weight: 500; padding-bottom: 12px; margin-bottom: -2px; transition: 0.2s; 
+            color: <?= ($view == 'chat') ? '#37352f' : '#787774' ?>; 
+            border-bottom: <?= ($view == 'chat') ? '3px solid #2383e2' : '3px solid transparent' ?>;">
+        <i class="fas fa-comments"></i> Thảo luận chung
     </a>
 </div>
 
@@ -157,6 +166,63 @@ $view = $_GET['view'] ?? 'kanban';
     });
     </script>
 
+<?php elseif ($view == 'chat'): ?>
+    <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e3e2e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); max-width: 900px; margin: 0 auto;">
+        <div style="margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px;">
+            <h2 style="margin: 0; color: #37352f; font-size: 1.4rem;"><i class="fas fa-bullhorn" style="color: #d9730d;"></i> Bảng tin & Thảo luận Dự án</h2>
+            <p style="margin: 5px 0 0 0; color: #787774; font-size: 0.95rem;">Nơi các thành viên cập nhật thông báo và chia sẻ tiến độ chung.</p>
+        </div>
+
+        <div id="chatBox" class="custom-scroll" style="height: 400px; overflow-y: auto; padding-right: 15px; margin-bottom: 20px; display: flex; flex-direction: column;">
+            <?php if(empty($projectComments)): ?>
+                <div style="text-align: center; margin: auto; color: #787774;">
+                    <i class="far fa-comments" style="font-size: 3rem; color: #e3e2e0; margin-bottom: 15px;"></i>
+                    <p>Kênh chat đang trống. Hãy "Alo" để test mic!</p>
+                </div>
+            <?php else: ?>
+                <?php foreach($projectComments as $c): 
+                    $isMe = ($c['user_id'] == $_SESSION['user_id']);
+                ?>
+                    <div style="display: flex; gap: 12px; margin-bottom: 20px; <?= $isMe ? 'flex-direction: row-reverse;' : '' ?>">
+                        <div style="background: <?= $isMe ? '#2383e2' : '#e3e2e0' ?>; color: <?= $isMe ? 'white' : '#37352f' ?>; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
+                            <?= strtoupper(substr($c['fullname'], 0, 1)) ?>
+                        </div>
+                        <div style="max-width: 75%;">
+                            <div style="font-size: 0.8rem; color: #787774; margin-bottom: 4px; <?= $isMe ? 'text-align: right;' : '' ?>">
+                                <strong><?= $isMe ? 'Bạn' : htmlspecialchars($c['fullname']) ?></strong> • <?= date('H:i d/m', strtotime($c['created_at'])) ?>
+                            </div>
+                            <div style="background: <?= $isMe ? '#e8f3fb' : '#f7f7f5' ?>; padding: 12px 16px; border-radius: 12px; font-size: 0.95rem; color: #37352f; border: 1px solid <?= $isMe ? '#b9d5e5' : '#e3e2e0' ?>;">
+                                <?php if(!empty($c['content'])) echo nl2br(htmlspecialchars($c['content'])); ?>
+                                <?php if(!empty($c['file_url'])): ?>
+                                    <div style="margin-top: <?= !empty($c['content'])?'10px':'0'?>; padding-top: <?= !empty($c['content'])?'10px':'0'?>; border-top: <?= !empty($c['content'])?'1px dashed #ccc':'none'?>;">
+                                        <a href="/public/uploads/teams/<?= htmlspecialchars($c['file_url']) ?>" target="_blank" style="color: #2383e2; text-decoration: none; font-weight: 500;"><i class="fas fa-paperclip"></i> <?= htmlspecialchars($c['file_url']) ?></a>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var chatBox = document.getElementById("chatBox");
+                if (chatBox) {
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+            });
+        </script>
+
+        <form action="index.php?action=add-project-comment" method="POST" enctype="multipart/form-data" style="background: #fdfdfc; padding: 15px; border-radius: 8px; border: 1px solid #e3e2e0;">
+            <input type="hidden" name="project_id" value="<?= $project['id'] ?>">
+            <textarea name="content" rows="2" placeholder="Nhập thông báo hoặc tin nhắn..." style="width: 100%; border: 1px solid #ccc; border-radius: 6px; padding: 10px; margin-bottom: 10px; resize: none; font-family: inherit;"></textarea>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <input type="file" name="attachment" style="font-size: 0.85rem;">
+                <button type="submit" style="background: #2383e2; color: white; border: none; padding: 8px 25px; border-radius: 6px; cursor: pointer; font-weight: 500;"><i class="fas fa-paper-plane"></i> Gửi vào nhóm</button>
+            </div>
+        </form>
+    </div>
+
 <?php else: ?>
     <div style="background: #f7f7f5; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; border: 1px solid #e3e2e0;">
         <span style="font-weight: 500; font-size: 0.9rem; color: #787774;"><i class="fas fa-filter"></i> Lọc & Sắp xếp:</span>
@@ -198,8 +264,8 @@ $view = $_GET['view'] ?? 'kanban';
                     $isOverdue = (!empty($t['due_date']) && strtotime($t['due_date']) < strtotime(date('Y-m-d')));
                 ?>
                 <div class="task-card">
-                    <a href="index.php?action=team-task-detail&task_id=<?= $t['id'] ?>&project_id=<?= $project['id'] ?>" 
-                       style="font-weight: 600; margin-bottom: 8px; display: block; color: #37352f; text-decoration: none;">
+                    <a href="index.php?action=team-task-detail&task_id=<?= $t['id'] ?>&project_id=<?= $project['id'] ?>#chatBox" 
+                        style="font-weight: 600; margin-bottom: 8px; display: block; color: #37352f; text-decoration: none;">
                         <?= htmlspecialchars($t['title']) ?>
                     </a>
                     
@@ -241,8 +307,8 @@ $view = $_GET['view'] ?? 'kanban';
                     $isOverdue = (!empty($t['due_date']) && strtotime($t['due_date']) < strtotime(date('Y-m-d')));
                 ?>
                 <div class="task-card">
-                    <a href="index.php?action=team-task-detail&task_id=<?= $t['id'] ?>&project_id=<?= $project['id'] ?>" 
-                       style="font-weight: 600; margin-bottom: 8px; display: block; color: #0b6e99; text-decoration: none;">
+                    <a href="index.php?action=team-task-detail&task_id=<?= $t['id'] ?>&project_id=<?= $project['id'] ?>#chatBox" 
+                        style="font-weight: 600; margin-bottom: 8px; display: block; color: #0b6e99; text-decoration: none;">
                         <?= htmlspecialchars($t['title']) ?>
                     </a>
                     
@@ -281,7 +347,7 @@ $view = $_GET['view'] ?? 'kanban';
             </div>
             <?php foreach ($reviewTasks as $t): ?>
                 <div class="task-card" style="border-left: 3px solid #d9730d;">
-                    <a href="index.php?action=team-task-detail&task_id=<?= $t['id'] ?>&project_id=<?= $project['id'] ?>" 
+                    <a href="index.php?action=team-task-detail&task_id=<?= $t['id'] ?>&project_id=<?= $project['id'] ?>#chatBox" 
                        style="font-weight: 600; margin-bottom: 8px; display: block; color: #ad7f11; text-decoration: none;">
                         <?= htmlspecialchars($t['title']) ?>
                     </a>
@@ -315,8 +381,8 @@ $view = $_GET['view'] ?? 'kanban';
             </div>
             <?php foreach ($doneTasks as $t): ?>
                 <div class="task-card" style="opacity: 0.6; border-left: 3px solid #0f7b6c;">
-                    <a href="index.php?action=team-task-detail&task_id=<?= $t['id'] ?>&project_id=<?= $project['id'] ?>" 
-                       style="font-weight: 600; margin-bottom: 8px; display: block; color: #37352f; text-decoration: line-through;">
+                    <a href="index.php?action=team-task-detail&task_id=<?= $t['id'] ?>&project_id=<?= $project['id'] ?>#chatBox" 
+                        style="font-weight: 600; margin-bottom: 8px; display: block; color: #37352f; text-decoration: line-through;">
                         <?= htmlspecialchars($t['title']) ?>
                     </a>
                     <div style="font-size: 0.75rem; color: #787774; margin-bottom: 10px;">

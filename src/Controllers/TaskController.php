@@ -12,27 +12,39 @@ class TaskController {
     public function index() {
         $userId = $_SESSION['user_id'];
         
-        $upcomingTasks = $this->taskModel->getTasksForReminder($userId);
-    if (!empty($upcomingTasks)) {
-    
-    $userEmail = $_SESSION['email']; 
-    
-    if ($userEmail) {
-        $count = 0;
-        foreach ($upcomingTasks as $t) {
-            $msg = "<h3>Hạn chót công việc: " . htmlspecialchars($t['title']) . "</h3>"
-                . "<p>Hạn cuối là ngày " . date('d/m/Y', strtotime($t['due_date'])) . ". Bạn vào xử lý ngay nhé!</p>";
-            
-            if (MailHelper::sendMail($userEmail, "Nhắc nhở Deadline", $msg)) {
-                $this->taskModel->markAsReminded($t['id']);
-                $count++;
+        // LOGIC KIỂM TRA CÔNG TẮC THÔNG BÁO 
+        $db = \Tinhu\TaskManager\Core\Database::getInstance()->getConnection();
+        try {
+            $stmt = $db->prepare("SELECT notify_deadline FROM users WHERE id = ?");
+            $stmt->execute([$userId]);
+            $userSettings = $stmt->fetch(\PDO::FETCH_ASSOC);
+            $canNotify = ($userSettings && $userSettings['notify_deadline'] == 1);
+        } catch (\Exception $e) {
+            $canNotify = true;
+        }
+
+        // Chỉ gửi mail nhắc nhở nếu người dùng BẬT thông báo
+        if ($canNotify) {
+            $upcomingTasks = $this->taskModel->getTasksForReminder($userId);
+            if (!empty($upcomingTasks)) {
+                $userEmail = $_SESSION['email']; 
+                if ($userEmail) {
+                    $count = 0;
+                    foreach ($upcomingTasks as $t) {
+                        $msg = "<h3>Hạn chót công việc: " . htmlspecialchars($t['title']) . "</h3>"
+                            . "<p>Hạn cuối là ngày " . date('d/m/Y', strtotime($t['due_date'])) . ". Bạn vào xử lý ngay nhé!</p>";
+                        
+                        if (MailHelper::sendMail($userEmail, "Nhắc nhở Deadline", $msg)) {
+                            $this->taskModel->markAsReminded($t['id']);
+                            $count++;
+                        }
+                    }
+                    if ($count > 0) {
+                        $_SESSION['system_alert'] = "Đã gửi $count mail nhắc việc vào địa chỉ: " . $userEmail;
+                    }
+                }
             }
         }
-        if ($count > 0) {
-            $_SESSION['system_alert'] = "Đã gửi $count mail nhắc việc vào địa chỉ: " . $userEmail;
-        }
-    }
-}
 
         $search = $_GET['search'] ?? '';
         $cat = $_GET['category'] ?? '';
@@ -43,7 +55,6 @@ class TaskController {
         $doneTasks    = $this->taskModel->getTasksByStatus($userId, 'Done', $search, $cat, $pri);
         $pendingTasks = $this->taskModel->getTasksByStatus($userId, 'Pending', $search, $cat, $pri);
         
-        //Tính dữ liệu cá nhân để hiển thị biểu đồ tiến độ
         $chartData = [
             'To-do' => count($todoTasks),
             'Doing' => count($doingTasks),
@@ -121,57 +132,85 @@ class TaskController {
     }
 
     public function delete() {
-    $id = $_GET['id'] ?? 0;
-    if ($id) {
-        $this->taskModel->deleteTask($id);
-    }
-    header('Location: index.php?action=tasks');
-    exit();
+        $id = $_GET['id'] ?? 0;
+        if ($id) {
+            $this->taskModel->deleteTask($id);
+        }
+        header('Location: index.php?action=tasks');
+        exit();
     }
 
     public function calendar() {
         $userId = $_SESSION['user_id'];
-        $tasks = $this->taskModel->getAllTasks($userId);
+        $db = \Tinhu\TaskManager\Core\Database::getInstance()->getConnection();
         
+        $filterType = $_GET['filter_type'] ?? 'all'; 
+
         $events = [];
-        foreach ($tasks as $t) {
-            if ($t['status'] == 'Done') {
-                continue; 
+
+        // Kéo việc cá nhân
+        if ($filterType === 'all' || $filterType === 'personal') {
+            $stmt = $db->prepare("SELECT id, title, start_date, due_date, status FROM tasks WHERE user_id = ? AND status != 'Done'");
+            $stmt->execute([$userId]);
+            $pTasks = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            
+            foreach ($pTasks as $t) {
+                $bg = '#fdfdfc'; $text = '#787774'; 
+                if ($t['status'] == 'To-do') { $bg = '#e8f3fb'; $text = '#0b6e99'; }
+                elseif ($t['status'] == 'Doing') { $bg = '#fdf3c0'; $text = '#d9730d'; }
+                elseif ($t['status'] == 'Pending') { $bg = '#fdecc8'; $text = '#ad7f11'; }
+
+                $isOverdue = (strtotime($t['due_date']) < strtotime(date('Y-m-d'))) && !empty($t['due_date']) && $t['due_date'] != '0000-00-00';
+                if ($isOverdue) { $bg = '#fde8e8'; $text = '#eb3639'; }
+
+                $endDate = (!empty($t['due_date']) && $t['due_date'] != '0000-00-00') ? date('Y-m-d', strtotime($t['due_date'] . ' +1 day')) : $t['start_date'];
+
+                $events[] = [
+                    'id' => 'p_'.$t['id'],
+                    'title' => '[Cá nhân] ' . $t['title'],
+                    'start' => $t['start_date'] ?: date('Y-m-d'),
+                    'end' => $endDate,
+                    'backgroundColor' => $bg,
+                    'borderColor' => $bg,
+                    'textColor' => $text,
+                    'url' => 'index.php?action=edit-task&id=' . $t['id']
+                ];
             }
-
-            $bg = '#e8f3fb'; 
-            $text = '#0b6e99'; 
-            $isOverdue = (strtotime($t['due_date']) <= strtotime(date('Y-m-d'))) && !empty($t['due_date']) && $t['due_date'] != '0000-00-00';
-
-            if ($isOverdue) {
-                $bg = '#fde8e8'; $text = '#eb3639';
-            } elseif ($t['status'] == 'Doing') {
-                $bg = '#fdf3c0'; $text = '#d9730d';
-            } elseif ($t['status'] == 'Pending') {
-                $bg = '#fdecc8'; $text = '#ad7f11'; 
-            }
-
-            // Xử lý Lịch: Ngày kết thúc phải cộng thêm 1 ngày
-            $endDate = $t['due_date'];
-            if ($endDate && $endDate != '0000-00-00') {
-                $endDate = date('Y-m-d', strtotime($endDate . ' +1 day'));
-            } else {
-                $endDate = $t['start_date'];
-            }
-
-            $events[] = [
-                'id' => $t['id'],
-                'title' => $t['title'],
-                'start' => $t['start_date'],
-                'end' => $endDate,
-                'backgroundColor' => $bg,   
-                'borderColor' => $bg,       
-                'textColor' => $text,       
-                'url' => 'index.php?action=edit-task&id=' . $t['id']
-            ];
         }
+
+        // Kéo việc nhóm
+        if ($filterType === 'all' || $filterType === 'team') {
+            $stmt = $db->prepare("SELECT tt.id, tt.title, tt.due_date, tt.status, tt.project_id, p.name as project_name 
+                                FROM team_tasks tt 
+                                JOIN projects p ON tt.project_id = p.id 
+                                WHERE tt.assigned_to = ? AND tt.status != 'Done'");
+            $stmt->execute([$userId]);
+            $tTasks = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            
+            foreach ($tTasks as $t) {
+                $bg = '#f4e0f9'; $text = '#8f24b2'; 
+                if ($t['status'] == 'Review') { $bg = '#fdecc8'; $text = '#ad7f11'; }
+
+                $isOverdue = (strtotime($t['due_date']) < strtotime(date('Y-m-d'))) && !empty($t['due_date']) && $t['due_date'] != '0000-00-00';
+                if ($isOverdue) { $bg = '#fde8e8'; $text = '#eb3639'; } 
+
+                $endDate = (!empty($t['due_date']) && $t['due_date'] != '0000-00-00') ? date('Y-m-d', strtotime($t['due_date'] . ' +1 day')) : null;
+                $startDate = (!empty($t['due_date']) && $t['due_date'] != '0000-00-00') ? $t['due_date'] : date('Y-m-d');
+
+                $events[] = [
+                    'id' => 't_'.$t['id'],
+                    'title' => '[' . htmlspecialchars($t['project_name']) . '] ' . $t['title'],
+                    'start' => $startDate,
+                    'end' => $endDate,
+                    'backgroundColor' => $bg,
+                    'borderColor' => $bg,
+                    'textColor' => $text,
+                    'url' => 'index.php?action=team-task-detail&task_id=' . $t['id'] . '&project_id=' . $t['project_id']
+                ];
+            }
+        }
+
         $eventsJson = json_encode($events);
-        
         require_once PROJECT_ROOT . '/views/tasks/calendar.php';
     }
 }

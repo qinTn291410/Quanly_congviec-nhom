@@ -9,7 +9,21 @@
             Quản lý Kanban &rarr;
         </a>
     </div>
+    <div style="background: white; padding: 15px 25px; border-radius: 10px; border: 1px solid #e3e2e0; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1 style="margin: 0; font-size: 1.5rem; color: #37352f;"><i class="far fa-calendar-alt" style="color: #2383e2;"></i> Lịch Tổng Hợp</h1>
+        <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #787774;">Theo dõi thời gian của cả việc cá nhân lẫn dự án nhóm.</p>
+    </div>
     
+    <form action="index.php" method="GET" style="display: flex; gap: 15px; margin: 0;">
+        <input type="hidden" name="action" value="calendar">
+        <select name="filter_type" onchange="this.form.submit()" style="padding: 8px 15px; border-radius: 6px; border: 1px solid #ccc; font-weight: 500;">
+            <option value="all" <?= (isset($_GET['filter_type']) && $_GET['filter_type'] == 'all') ? 'selected' : '' ?>>Hiển thị tất cả</option>
+            <option value="personal" <?= (isset($_GET['filter_type']) && $_GET['filter_type'] == 'personal') ? 'selected' : '' ?>>Chỉ việc cá nhân</option>
+            <option value="team" <?= (isset($_GET['filter_type']) && $_GET['filter_type'] == 'team') ? 'selected' : '' ?>>Chỉ việc nhóm</option>
+        </select>
+    </form>
+</div>
     <div id='calendar'></div>
 </div>
 

@@ -11,14 +11,12 @@ class TeamController {
         $this->teamModel = new TeamModel();
     }
 
-    // Đổ dữ liệu ra trang Quản lý nhóm
     public function index() {
         $userId = $_SESSION['user_id'];
         $teams = $this->teamModel->getTeamsByUserId($userId);
         require_once PROJECT_ROOT . '/views/teams/index.php';
     }
 
-    // Xử lý form Tạo nhóm mới
     public function create() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userId = $_SESSION['user_id'];
@@ -46,7 +44,6 @@ class TeamController {
         $projects = $this->teamModel->getProjectsByTeam($teamId);
         $teamComments = $this->teamModel->getTeamComments($teamId);
         
-        // Tính % hoàn thành cho mỗi dự án để hiển thị bên ngoài
         foreach ($projects as &$p) {
             $stats = $this->teamModel->getProjectStats($p['id']);
             $total = 0;
@@ -59,7 +56,7 @@ class TeamController {
             }
             $p['percent'] = ($total > 0) ? round(($done / $total) * 100) : 0;
         }
-        unset($p); // Xóa tham chiếu
+        unset($p);
         
         require_once PROJECT_ROOT . '/views/teams/detail.php';
     }
@@ -80,7 +77,6 @@ class TeamController {
         }
     }
 
-    // Xử lý nút Tạo Dự án
     public function createProject() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $teamId = $_POST['team_id'];
@@ -98,7 +94,6 @@ class TeamController {
         }
     }
 
-    // Mở bảng Kanban của Dự án
     public function projectKanban() {
         $projectId = $_GET['id'] ?? 0;
         $project = $this->teamModel->getProjectById($projectId);
@@ -124,7 +119,6 @@ class TeamController {
         $reviewTasks = $this->teamModel->getTeamTasksByStatus($projectId, 'Review', $filterAssignee, $sort);
         $doneTasks = $this->teamModel->getTeamTasksByStatus($projectId, 'Done', $filterAssignee, $sort);
 
-        //LẤY DỮ LIỆU CHO BIỂU ĐỒ
         $stats = $this->teamModel->getProjectStats($projectId);
         $chartData = ['Backlog' => 0, 'In Progress' => 0, 'Review' => 0, 'Done' => 0];
         
@@ -144,7 +138,7 @@ class TeamController {
         foreach(array_merge($backlogTasks, $inProgressTasks, $reviewTasks) as $t) {
             if (!empty($t['due_date']) && $t['due_date'] != '0000-00-00') {
                 $diff = (strtotime($t['due_date']) - strtotime(date('Y-m-d'))) / 86400;
-                if ($diff >= 0 && $diff <= 2) { // Hạn trong hôm nay, ngày mai hoặc mốt
+                if ($diff >= 0 && $diff <= 2) { 
                     $dueSoon++;
                 }
             }
@@ -161,13 +155,20 @@ class TeamController {
             $projectId = $_POST['project_id'];
             $data = [
                 'project_id'  => $projectId,
-                'assigned_to' => $_POST['assigned_to'] ?: null, // Nếu không chọn thì để null
+                'assigned_to' => $_POST['assigned_to'] ?: null, 
                 'title'       => $_POST['title'],
                 'description' => $_POST['description'],
                 'priority'    => $_POST['priority'],
                 'due_date'    => !empty($_POST['due_date']) ? $_POST['due_date'] : null
             ];
             $this->teamModel->createTeamTask($data);
+            
+            if (!empty($data['assigned_to']) && $data['assigned_to'] != $_SESSION['user_id']) {
+                $db = \Tinhu\TaskManager\Core\Database::getInstance()->getConnection();
+                $msg = "CÓ VIỆC MỚI: Sếp vừa giao cho bạn việc '" . $data['title'] . "'";
+                $db->prepare("INSERT INTO notifications (user_id, message) VALUES (?, ?)")->execute([$data['assigned_to'], $msg]);
+            }
+
             $_SESSION['system_alert'] = "Đã phân công việc: '" . $data['title'] . "' thành công!";
             header("Location: index.php?action=project-kanban&id=" . $projectId);
             exit();
@@ -181,13 +182,20 @@ class TeamController {
         
         if ($taskId && $projectId) {
             $this->teamModel->updateTeamTaskStatus($taskId, $status);
+            
+            $taskInfo = $this->teamModel->getTeamTaskById($taskId);
+            if (!empty($taskInfo['assigned_to']) && $taskInfo['assigned_to'] != $_SESSION['user_id']) {
+                $db = \Tinhu\TaskManager\Core\Database::getInstance()->getConnection();
+                $msg = "CẬP NHẬT: Công việc '" . $taskInfo['title'] . "' vừa bị chuyển trạng thái thành: " . strtoupper($status);
+                $db->prepare("INSERT INTO notifications (user_id, message) VALUES (?, ?)")->execute([$taskInfo['assigned_to'], $msg]);
+            }
+
             $_SESSION['system_alert'] = "Đã cập nhật tiến độ công việc sang: " . strtoupper($status);
         }
         header("Location: index.php?action=project-kanban&id=" . $projectId);
         exit();
     }
 
-    // Hiển thị form sửa và nhận dữ liệu lưu lại
     public function editTeamTask() {
         $taskId = $_GET['id'] ?? 0;
         $projectId = $_GET['project_id'] ?? 0;
@@ -211,7 +219,6 @@ class TeamController {
         require_once PROJECT_ROOT . '/views/teams/edit_task.php';
     }
 
-    // Thực hiện xóa task
     public function deleteTeamTask() {
         $taskId = $_GET['id'] ?? 0;
         $projectId = $_GET['project_id'] ?? 0;
@@ -222,7 +229,6 @@ class TeamController {
         exit();
     }
 
-    // Mở trang Chi tiết Task (Xem bình luận)
     public function taskDetail() {
         $taskId = $_GET['task_id'] ?? 0;
         $projectId = $_GET['project_id'] ?? 0;
@@ -236,7 +242,6 @@ class TeamController {
         require_once PROJECT_ROOT . '/views/teams/task_detail.php';
     }
 
-    // Xử lý gửi bình luận & Upload file đính kèm
     public function addComment() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $taskId = $_POST['task_id'];
@@ -246,7 +251,6 @@ class TeamController {
             $fileUrl = null;
 
             if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] === 0) {
-                // Tạo thư mục nếu chưa có
                 $uploadDir = PROJECT_ROOT . '/public/uploads/teams/';
                 if (!is_dir($uploadDir)) { mkdir($uploadDir, 0777, true); }
                 
@@ -265,7 +269,6 @@ class TeamController {
         }
     }
 
-    // Kick member ra khỏi nhóm
     public function kickMember() {
         $teamId = $_GET['team_id'] ?? 0;
         $userId = $_GET['user_id'] ?? 0;
@@ -295,7 +298,6 @@ class TeamController {
         exit();
     }
 
-    //XỬ LÝ CHAT DỰ ÁN CHUNG
     public function addProjectComment() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $projectId = $_POST['project_id'];
@@ -319,7 +321,6 @@ class TeamController {
         }
     }
 
-        //XỬ LÝ CHAT NHÓM CHUNG
     public function addTeamMessage() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $teamId = $_POST['team_id'];

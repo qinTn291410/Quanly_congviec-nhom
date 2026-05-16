@@ -13,3 +13,7 @@
    Quản lý công việc nhóm,
    Theo dõi tiến độ dự án
    Quản lý trao đổi & cộng tác
+4. Lịch làm việc & Thông báo
+   Lịch tổng hợp
+   Thông báo hệ thống
+5. Báo cáo & Thống kê

@@ -1,19 +1,15 @@
 <?php
-// Kiểm tra nếu chưa đăng nhập thì đá ra trang login
 if (!isset($_SESSION['user_id'])) {
     header('Location: index.php?action=login');
     exit();
 }
 
-// Lấy tên từ Session và trích ra chữ cái đầu tiên (Dùng mb_substr để không lỗi dấu tiếng Việt)
 $fullname = $_SESSION['fullname'] ?? 'Admin';
 $firstChar = mb_substr($fullname, 0, 1, "UTF-8");
 
-// 1. ÁP DỤNG MÚI GIỜ
 $userTimezone = $_SESSION['timezone'] ?? 'Asia/Ho_Chi_Minh';
 date_default_timezone_set($userTimezone);
 
-// 2. CHUẨN BỊ BỘ TỪ ĐIỂN NGÔN NGỮ
 $lang = $_SESSION['language'] ?? 'vi';
 
 $menu_home = ($lang === 'en') ? 'Dashboard' : 'Trang chủ';
@@ -24,15 +20,23 @@ $menu_calendar = ($lang === 'en') ? 'Calendar' : 'Lịch làm việc';
 $menu_logout = ($lang === 'en') ? 'Logout' : 'Đăng xuất';
 $menu_settings = ($lang === 'en') ? 'System Settings' : 'Cài đặt hệ thống';
 
-// 3. HỆ THỐNG THÔNG BÁO (RADAR QUÉT DEADLINE)
 $dueCount = 0;
-if (isset($_SESSION['user_id']) && ($_SESSION['notifications'] ?? 1) == 1) {
+if (isset($_SESSION['user_id'])) {
     try {
-        $db = new \PDO("mysql:host=localhost;dbname=quanly_congviec;charset=utf8", "root", "");
-        $stmt = $db->prepare("SELECT COUNT(*) FROM tasks WHERE user_id = ? AND status != 'Done' AND due_date <= CURDATE() AND due_date != '0000-00-00'");
-        $stmt->execute([$_SESSION['user_id']]);
-        $dueCount = $stmt->fetchColumn();
-    } catch (\PDOException $e) {
+        $db = \Tinhu\TaskManager\Core\Database::getInstance()->getConnection();
+        $uid = $_SESSION['user_id'];
+        
+        $stmt1 = $db->prepare("SELECT COUNT(*) FROM tasks WHERE user_id = ? AND status != 'Done' AND due_date <= CURDATE() AND due_date != '0000-00-00' AND due_date IS NOT NULL");
+        $stmt1->execute([$uid]);
+        $countPersonal = (int)$stmt1->fetchColumn();
+
+        $stmt2 = $db->prepare("SELECT COUNT(*) FROM team_tasks WHERE assigned_to = ? AND status != 'Done' AND due_date <= CURDATE() AND due_date != '0000-00-00' AND due_date IS NOT NULL");
+        $stmt2->execute([$uid]);
+        $countTeam = (int)$stmt2->fetchColumn();
+
+        $dueCount = $countPersonal + $countTeam;
+    } catch (\Exception $e) {
+        // Bỏ qua lỗi nếu có
     }
 }
 ?>
@@ -81,10 +85,27 @@ if (isset($_SESSION['user_id']) && ($_SESSION['notifications'] ?? 1) == 1) {
                 <div>
                     <i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>
                     <strong><?= ($lang === 'en') ? 'Deadline Warning:' : 'Cảnh báo Deadline:' ?></strong> 
-                    <?= ($lang === 'en') ? "You have <b>$dueCount</b> tasks due today or overdue!" : "Bạn đang có <b>$dueCount</b> công việc sắp hết hạn hoặc đã quá hạn hôm nay!" ?>
+                    <?= ($lang === 'en') ? "You have <b>$dueCount</b> tasks (Personal & Team) due today or overdue!" : "Bạn đang có <b>$dueCount</b> công việc (Cá nhân & Nhóm) sắp hết hạn hoặc đã quá hạn hôm nay!" ?>
                 </div>
-                <a href="index.php?action=tasks" style="background: #eb3639; color: white; padding: 5px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; font-weight: 500;">
-                    <?= ($lang === 'en') ? 'View Tasks' : 'Xử lý ngay' ?>
+                <a href="index.php?action=calendar" style="background: #eb3639; color: white; padding: 5px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; font-weight: 500;">
+                    <?= ($lang === 'en') ? 'View Calendar' : 'Xử lý ngay' ?>
                 </a>
             </div>
         <?php endif; ?>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                setInterval(function() {
+                    fetch('index.php?action=api-check-notifications')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            data.data.forEach(notif => {
+                                alert(notif.message);
+                            });
+                        }
+                    })
+                    .catch(err => console.error('Lỗi quét Radar:', err));
+                }, 2000);
+            });
+        </script>

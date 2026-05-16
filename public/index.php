@@ -39,8 +39,9 @@ switch ($action) {
         break;
 
     case 'settings':
-        $userController = new \Tinhu\TaskManager\Controllers\UserController();
-        $userController->settings();
+        require_once PROJECT_ROOT . '/src/Controllers/SettingsController.php';
+        $settingsController = new \Tinhu\TaskManager\Controllers\SettingsController();
+        $settingsController->index();
         break;
     
     case 'tasks':
@@ -202,6 +203,33 @@ switch ($action) {
         require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
         (new \Tinhu\TaskManager\Controllers\TeamController())->removeTeam();
         break;
+    
+    case 'api-check-notifications':
+        header('Content-Type: application/json');
+        $db = \Tinhu\TaskManager\Core\Database::getInstance()->getConnection();
+        $userId = $_SESSION['user_id'] ?? 0;
+        
+        $stmtSet = $db->prepare("SELECT notify_alerts FROM users WHERE id = ?");
+        $stmtSet->execute([$userId]);
+        $uSet = $stmtSet->fetch(\PDO::FETCH_ASSOC);
+        
+        if ($userId && (!isset($uSet['notify_alerts']) || $uSet['notify_alerts'] == 1)) {
+            $stmt = $db->prepare("SELECT id, message FROM notifications WHERE user_id = ? AND is_read = 0");
+            $stmt->execute([$userId]);
+            $notifs = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            if (count($notifs) > 0) {
+                $ids = array_column($notifs, 'id');
+                $inQuery = implode(',', array_fill(0, count($ids), '?'));
+                $stmtUpdate = $db->prepare("UPDATE notifications SET is_read = 1 WHERE id IN ($inQuery)");
+                $stmtUpdate->execute($ids);
+                
+                echo json_encode(['status' => 'success', 'data' => $notifs]);
+                exit;
+            }
+        }
+        echo json_encode(['status' => 'empty']);
+        exit;
 
     default:    
         echo "404 - Trang không tồn tại!";

@@ -47,11 +47,27 @@
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
+        
         <script>
             document.addEventListener("DOMContentLoaded", function() {
                 var chatBox = document.getElementById("chatBox");
                 if (chatBox) {
                     chatBox.scrollTop = chatBox.scrollHeight;
+
+                    setInterval(function() {
+                        fetch(window.location.href)
+                        .then(response => response.text())
+                        .then(html => {
+                            var parser = new DOMParser();
+                            var doc = parser.parseFromString(html, 'text/html');
+                            var newChatBox = doc.getElementById('chatBox');
+                            
+                            if (newChatBox && chatBox.innerHTML !== newChatBox.innerHTML) {
+                                chatBox.innerHTML = newChatBox.innerHTML;
+                                chatBox.scrollTop = chatBox.scrollHeight; 
+                            }
+                        }).catch(err => console.log('Lỗi load tin nhắn:', err));
+                    }, 2000); 
                 }
             });
         </script>

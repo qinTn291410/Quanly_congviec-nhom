@@ -204,11 +204,27 @@
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
+        
         <script>
             document.addEventListener("DOMContentLoaded", function() {
                 var chatBox = document.getElementById("chatBox");
                 if (chatBox) {
                     chatBox.scrollTop = chatBox.scrollHeight;
+
+                    setInterval(function() {
+                        fetch(window.location.href)
+                        .then(response => response.text())
+                        .then(html => {
+                            var parser = new DOMParser();
+                            var doc = parser.parseFromString(html, 'text/html');
+                            var newChatBox = doc.getElementById('chatBox');
+                            
+                            if (newChatBox && chatBox.innerHTML !== newChatBox.innerHTML) {
+                                chatBox.innerHTML = newChatBox.innerHTML;
+                                chatBox.scrollTop = chatBox.scrollHeight; 
+                            }
+                        }).catch(err => console.log('Lỗi load tin nhắn:', err));
+                    }, 2000); 
                 }
             });
         </script>
@@ -348,7 +364,7 @@
             <?php foreach ($reviewTasks as $t): ?>
                 <div class="task-card" style="border-left: 3px solid #d9730d;">
                     <a href="index.php?action=team-task-detail&task_id=<?= $t['id'] ?>&project_id=<?= $project['id'] ?>#chatBox" 
-                       style="font-weight: 600; margin-bottom: 8px; display: block; color: #ad7f11; text-decoration: none;">
+                        style="font-weight: 600; margin-bottom: 8px; display: block; color: #ad7f11; text-decoration: none;">
                         <?= htmlspecialchars($t['title']) ?>
                     </a>
                     

@@ -2,6 +2,14 @@
 
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
     <h1 style="font-size: 1.8rem; margin: 0; color: #37352f;"><i class="fas fa-chart-bar" style="color: #2383e2;"></i> Báo cáo Công việc Cá nhân</h1>
+    <div style="display: flex; gap: 10px;">
+        <button onclick="window.print()" style="background: #eb3639; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.9rem;">
+            <i class="fas fa-file-pdf"></i> In PDF
+        </button>
+        <a href="index.php?action=export-personal-report" style="background: #0f7b6c; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.9rem;">
+            <i class="fas fa-file-csv"></i> Xuất CSV
+        </a>
+    </div>
 </div>
 
 <!-- THỐNG KÊ TỔNG QUAN -->

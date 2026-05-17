@@ -238,9 +238,13 @@ switch ($action) {
         exit;
 
     case 'export-excel':
-        require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
-        $exportCtrl = new \Tinhu\TaskManager\Controllers\TeamController();
-        $exportCtrl->exportExcel();
+        require_once PROJECT_ROOT . '/src/Controllers/ExportController.php';
+        (new \Tinhu\TaskManager\Controllers\ExportController())->exportExcel();
+        break;
+
+    case 'export-personal-report':
+        require_once PROJECT_ROOT . '/src/Controllers/ExportController.php';
+        (new \Tinhu\TaskManager\Controllers\ExportController())->exportPersonalReport();
         break;
 
     case 'admin':

@@ -2,6 +2,13 @@
 
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
     <h1 style="font-size: 1.8rem; margin: 0; color: #37352f;"><i class="fas fa-chart-line" style="color: #2383e2;"></i> Báo cáo Nhóm / Dự án</h1>
+    <?php if ($selectedTeamId && isset($teamStats)): ?>
+    <div style="display: flex; gap: 10px;">
+        <button onclick="window.print()" style="background: #eb3639; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.9rem;">
+            <i class="fas fa-file-pdf"></i> In PDF
+        </button>
+    </div>
+    <?php endif; ?>
 </div>
 
 <?php if (isset($error)): ?>

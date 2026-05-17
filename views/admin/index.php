@@ -106,11 +106,16 @@
                 </div>
             </div>
 
-            <div style="margin-bottom: 30px;">
-                <label style="display: block; font-weight: 500; margin-bottom: 5px;">Email gửi thông báo</label>
-                <input type="email" name="configs[smtp_user]" value="<?= htmlspecialchars($configs['smtp_user'] ?? '') ?>" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box;">
+            <div style="display: flex; gap: 15px; margin-bottom: 30px;">
+                <div style="flex: 1;">
+                    <label style="display: block; font-weight: 500; margin-bottom: 5px;">Email gửi thông báo</label>
+                    <input type="email" name="configs[smtp_user]" value="<?= htmlspecialchars($configs['smtp_user'] ?? '') ?>" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
+                </div>
+                <div style="flex: 1;">
+                    <label style="display: block; font-weight: 500; margin-bottom: 5px;">Mật khẩu ứng dụng (App Password)</label>
+                    <input type="password" name="configs[smtp_pass]" value="<?= htmlspecialchars($configs['smtp_pass'] ?? '') ?>" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc;" placeholder="16 ký tự từ Google">
+                </div>
             </div>
-
             <button type="submit" style="background: #eb3639; color: white; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 600;"><i class="fas fa-save"></i> Lưu toàn bộ cấu hình</button>
         </form>
     </div>

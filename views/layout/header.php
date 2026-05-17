@@ -17,6 +17,7 @@ $menu_goals = ($lang === 'en') ? 'Goals' : 'Mục tiêu';
 $menu_tasks = ($lang === 'en') ? 'Personal Tasks' : 'Việc cá nhân';
 $menu_team = ($lang === 'en') ? 'Team Workspace' : 'Việc nhóm';
 $menu_calendar = ($lang === 'en') ? 'Calendar' : 'Lịch làm việc';
+$menu_reports = ($lang === 'en') ? 'Reports' : 'Báo cáo';
 $menu_logout = ($lang === 'en') ? 'Logout' : 'Đăng xuất';
 $menu_settings = ($lang === 'en') ? 'System Settings' : 'Cài đặt hệ thống';
 
@@ -47,6 +48,13 @@ if (isset($_SESSION['user_id'])) {
     <title>Workspace - Task Manager</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @media print {
+            .sidebar, button, a.btn-status, form, .custom-scroll { display: none !important; }
+            .main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+            body { background: white; }
+        }
+    </style>
 </head>
 <body>
 <div class="workspace-wrapper">
@@ -69,8 +77,15 @@ if (isset($_SESSION['user_id'])) {
         <a href="index.php?action=tasks" class="menu-item"><i class="fas fa-check-square"></i> <?= $menu_tasks ?></a>
         <a href="index.php?action=teams" class="menu-item"><i class="fas fa-users"></i> <?= $menu_team ?></a>
         <a href="index.php?action=calendar" class="menu-item"><i class="far fa-calendar-alt"></i> <?= $menu_calendar ?></a>
+        <a href="index.php?action=report-personal" class="menu-item"><i class="fas fa-chart-bar"></i> <?= $menu_reports ?></a>
 
         <div style="margin-top: auto;">
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                <a href="index.php?action=admin" class="menu-item" style="color: #eb3639; font-weight: bold; background: #fde8e8; margin-bottom: 15px;">
+                    <i class="fas fa-shield-alt"></i> Quản trị Admin
+                </a>
+            <?php endif; ?>
+
             <a href="index.php?action=logout" class="menu-item"><i class="fas fa-sign-out-alt"></i> <?= $menu_logout ?></a>
             <a href="index.php?action=settings" style="display: block; padding: 10px 15px; color: var(--text-muted); text-decoration: none; border-radius: 4px; margin-top: 5px;">
                 <i class="fas fa-cog" style="width: 20px;"></i> <?= $menu_settings ?>

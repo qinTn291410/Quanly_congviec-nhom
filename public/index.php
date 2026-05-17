@@ -45,26 +45,31 @@ switch ($action) {
         break;
     
     case 'tasks':
+        require_once PROJECT_ROOT . '/src/Controllers/TaskController.php';
         $taskController = new \Tinhu\TaskManager\Controllers\TaskController();
         $taskController->index();
         break;
 
     case 'add-task':
+        require_once PROJECT_ROOT . '/src/Controllers/TaskController.php';
         $taskController = new \Tinhu\TaskManager\Controllers\TaskController();
         $taskController->create();
         break;
 
     case 'update-task':
+        require_once PROJECT_ROOT . '/src/Controllers/TaskController.php';
         $taskController = new \Tinhu\TaskManager\Controllers\TaskController();
         $taskController->update();
         break;
 
     case 'edit-task':
+        require_once PROJECT_ROOT . '/src/Controllers/TaskController.php';
         $taskController = new \Tinhu\TaskManager\Controllers\TaskController();
         $taskController->edit();
         break;
     
     case 'delete-task':
+        require_once PROJECT_ROOT . '/src/Controllers/TaskController.php';
         $taskController = new \Tinhu\TaskManager\Controllers\TaskController();
         $taskController->delete();
         break;
@@ -101,9 +106,10 @@ switch ($action) {
         break;
 
     case 'calendar':
-    $taskController = new \Tinhu\TaskManager\Controllers\TaskController();
-    $taskController->calendar();
-    break;
+        require_once PROJECT_ROOT . '/src/Controllers/TaskController.php';
+        $taskController = new \Tinhu\TaskManager\Controllers\TaskController();
+        $taskController->calendar();
+        break;
 
     case 'teams':
         require_once PROJECT_ROOT . '/src/Controllers/TeamController.php';
@@ -237,7 +243,37 @@ switch ($action) {
         $exportCtrl->exportExcel();
         break;
 
-    default:    
+    case 'admin':
+        require_once PROJECT_ROOT . '/src/Controllers/AdminController.php';
+        (new \Tinhu\TaskManager\Controllers\AdminController())->index();
+        break;
+        
+    case 'admin-change-role':
+        require_once PROJECT_ROOT . '/src/Controllers/AdminController.php';
+        (new \Tinhu\TaskManager\Controllers\AdminController())->updateRole();
+        break;
+        
+    case 'admin-toggle-lock':
+        require_once PROJECT_ROOT . '/src/Controllers/AdminController.php';
+        (new \Tinhu\TaskManager\Controllers\AdminController())->toggleLock();
+        break;
+        
+    case 'admin-save-config':
+        require_once PROJECT_ROOT . '/src/Controllers/AdminController.php';
+        (new \Tinhu\TaskManager\Controllers\AdminController())->saveConfig();
+        break;
+
+    case 'report-personal':
+        require_once PROJECT_ROOT . '/src/Controllers/ReportController.php';
+        (new \Tinhu\TaskManager\Controllers\ReportController())->personalReport();
+        break;
+
+    case 'report-team':
+        require_once PROJECT_ROOT . '/src/Controllers/ReportController.php';
+        (new \Tinhu\TaskManager\Controllers\ReportController())->teamReport();
+        break;
+
+    default:
         echo "404 - Trang không tồn tại!";
         break;
 }

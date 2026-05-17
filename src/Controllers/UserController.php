@@ -21,13 +21,20 @@ class UserController {
             $user = $this->userModel->findUserByEmail($email);
 
             if ($user && password_verify($password, $user['password'])) {
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['fullname'] = $user['fullname'];
-                $_SESSION['language'] = $language ?? 'vi'; 
-                $_SESSION['timezone'] = $timezone ?? 'Asia/Ho_Chi_Minh';
-                $_SESSION['email'] = $user['email'];
-                header('Location: index.php?action=dashboard'); 
-                exit();
+                
+                if (isset($user['is_locked']) && $user['is_locked'] == 1) {
+                    $error = 'Tài khoản của bạn đã bị Admin khóa!';
+                } else {
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['fullname'] = $user['fullname'];
+                    $_SESSION['role'] = $user['role'] ?? 'user'; 
+                    $_SESSION['language'] = $language ?? 'vi'; 
+                    $_SESSION['timezone'] = $timezone ?? 'Asia/Ho_Chi_Minh';
+                    $_SESSION['email'] = $user['email'];
+                    header('Location: index.php?action=dashboard'); 
+                    exit();
+                }
+
             } else {
                 $error = 'Email hoặc mật khẩu không chính xác!';
             }

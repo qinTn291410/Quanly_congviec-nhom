@@ -10,6 +10,19 @@
 <?php endif; ?>
 
 <?php
+// --- KÉO DỮ LIỆU TỪ ADMIN (MỤC 17) ---
+$dbConfig = \Tinhu\TaskManager\Core\Database::getInstance()->getConnection();
+
+// Lấy danh sách Nhãn (Category)
+$stmtLbl = $dbConfig->query("SELECT config_value FROM system_configs WHERE config_key = 'task_labels'");
+$taskLabelsStr = $stmtLbl->fetchColumn() ?: 'Công việc, Học tập, Sức khỏe, Tài chính, Khác';
+$taskLabels = array_map('trim', explode(',', $taskLabelsStr));
+
+// Lấy danh sách Độ ưu tiên (Priority)
+$stmtPri = $dbConfig->query("SELECT config_value FROM system_configs WHERE config_key = 'task_priorities'");
+$taskPrioritiesStr = $stmtPri->fetchColumn() ?: 'Low, Medium, High';
+$taskPriorities = array_map('trim', explode(',', $taskPrioritiesStr));
+
 $catColors = [
     'Công việc' => ['bg' => '#fdecc8', 'text' => '#ad7f11'], 
     'Học tập' => ['bg' => '#e8f3fb', 'text' => '#0b6e99'], 
@@ -63,10 +76,13 @@ $catColors = [
         $allTasks = array_merge($todoTasks, $doingTasks, $pendingTasks, $doneTasks);
         
         // 1. Tính toán cho Khối 3 (Danh mục)
-        $catStats = ['Công việc' => 0, 'Học tập' => 0, 'Sức khỏe' => 0, 'Tài chính' => 0, 'Khác' => 0];
+        $catStats = [];
+        foreach($taskLabels as $lbl) { $catStats[$lbl] = 0; } // Khởi tạo theo danh sách Admin
+        $catStats['Khác'] = 0; // Đề phòng nhãn cũ không có trong config
+        
         foreach ($allTasks as $t) {
             $c = $t['category'] ?? 'Khác';
-            if (isset($catStats[$c])) $catStats[$c]++;
+            if (isset($catStats[$c])) $catStats[$c]++; else $catStats[$c] = 1;
         }
 
         // 2. Tính toán cho Khối 4 (Deadline)
@@ -257,18 +273,16 @@ $catColors = [
             
             <select name="category" onchange="this.form.submit()" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.85rem;">
                 <option value="">Tất cả danh mục</option>
-                <option value="Công việc" <?= (isset($_GET['category']) && $_GET['category'] == 'Công việc') ? 'selected' : '' ?>>Công việc</option>
-                <option value="Học tập" <?= (isset($_GET['category']) && $_GET['category'] == 'Học tập') ? 'selected' : '' ?>>Học tập</option>
-                <option value="Sức khỏe" <?= (isset($_GET['category']) && $_GET['category'] == 'Sức khỏe') ? 'selected' : '' ?>>Sức khỏe</option>
-                <option value="Tài chính" <?= (isset($_GET['category']) && $_GET['category'] == 'Tài chính') ? 'selected' : '' ?>>Tài chính</option>
-                <option value="Khác" <?= (isset($_GET['category']) && $_GET['category'] == 'Khác') ? 'selected' : '' ?>>Khác</option>
+                <?php foreach($taskLabels as $lbl): ?>
+                    <option value="<?= htmlspecialchars($lbl) ?>" <?= (isset($_GET['category']) && $_GET['category'] == $lbl) ? 'selected' : '' ?>><?= htmlspecialchars($lbl) ?></option>
+                <?php endforeach; ?>
             </select>
 
             <select name="priority" onchange="this.form.submit()" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.85rem;">
                 <option value="">Mọi ưu tiên</option>
-                <option value="High" <?= (isset($_GET['priority']) && $_GET['priority'] == 'High') ? 'selected' : '' ?>>Cao</option>
-                <option value="Medium" <?= (isset($_GET['priority']) && $_GET['priority'] == 'Medium') ? 'selected' : '' ?>>Trung bình</option>
-                <option value="Low" <?= (isset($_GET['priority']) && $_GET['priority'] == 'Low') ? 'selected' : '' ?>>Thấp</option>
+                <?php foreach($taskPriorities as $pri): ?>
+                    <option value="<?= htmlspecialchars($pri) ?>" <?= (isset($_GET['priority']) && $_GET['priority'] == $pri) ? 'selected' : '' ?>><?= htmlspecialchars($pri) ?></option>
+                <?php endforeach; ?>
             </select>
             
             <button type="submit" style="background: #2383e2; color: white; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
@@ -545,11 +559,9 @@ $catColors = [
                 <div class="form-group" style="flex: 1; margin-bottom: 0;">
                     <label>Danh mục</label>
                     <select name="category" class="form-control">
-                        <option value="Công việc">Công việc</option>
-                        <option value="Học tập">Học tập</option>
-                        <option value="Sức khỏe">Sức khỏe</option>
-                        <option value="Tài chính">Tài chính</option>
-                        <option value="Khác" selected>Khác</option>
+                        <?php foreach($taskLabels as $lbl): ?>
+                            <option value="<?= htmlspecialchars($lbl) ?>"><?= htmlspecialchars($lbl) ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="form-group" style="flex: 1; margin-bottom: 0;">
@@ -566,9 +578,9 @@ $catColors = [
             <div class="form-group">
                 <label>Ưu tiên</label>
                 <select name="priority" class="form-control">
-                    <option value="Low">Thấp</option>
-                    <option value="Medium" selected>Trung bình</option>
-                    <option value="High">Cao</option>
+                    <?php foreach($taskPriorities as $pri): ?>
+                        <option value="<?= htmlspecialchars($pri) ?>" <?= $pri == 'Medium' ? 'selected' : '' ?>><?= htmlspecialchars($pri) ?></option>
+                    <?php endforeach; ?>
                 </select>
             </div>
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">

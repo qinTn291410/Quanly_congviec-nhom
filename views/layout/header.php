@@ -17,7 +17,6 @@ $menu_goals = ($lang === 'en') ? 'Goals' : 'Mục tiêu';
 $menu_tasks = ($lang === 'en') ? 'Personal Tasks' : 'Việc cá nhân';
 $menu_team = ($lang === 'en') ? 'Team Workspace' : 'Việc nhóm';
 $menu_calendar = ($lang === 'en') ? 'Calendar' : 'Lịch làm việc';
-$menu_reports = ($lang === 'en') ? 'Reports' : 'Báo cáo';
 $menu_logout = ($lang === 'en') ? 'Logout' : 'Đăng xuất';
 $menu_settings = ($lang === 'en') ? 'System Settings' : 'Cài đặt hệ thống';
 
@@ -77,7 +76,6 @@ if (isset($_SESSION['user_id'])) {
         <a href="index.php?action=tasks" class="menu-item"><i class="fas fa-check-square"></i> <?= $menu_tasks ?></a>
         <a href="index.php?action=teams" class="menu-item"><i class="fas fa-users"></i> <?= $menu_team ?></a>
         <a href="index.php?action=calendar" class="menu-item"><i class="far fa-calendar-alt"></i> <?= $menu_calendar ?></a>
-        <a href="index.php?action=report-personal" class="menu-item"><i class="fas fa-chart-bar"></i> <?= $menu_reports ?></a>
 
         <div style="margin-top: auto;">
             <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>

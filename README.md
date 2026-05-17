@@ -1,7 +1,7 @@
 1. Quản lý tài khoản & người dùng:
    Đăng ký / Đăng nhập / Đăng Xuất,
    Quản lý hồ sơ cá nhân.
-
+   Phân quyền & quản trị người dùng (Admin)
 2. Quản lý công việc cá nhân:
    Tạo & quản lý công việc,
    Theo dõi tiến độ & nhắc nhở,
@@ -19,3 +19,4 @@
 5. Báo cáo & Thống kê
    Báo cáo công việc cá nhân
    Báo cáo nhóm / dự án
+6. Cấu hình hệ thống (Admin)

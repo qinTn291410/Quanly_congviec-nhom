@@ -7,7 +7,6 @@
     .setting-select { padding: 8px 12px; border: 1px solid #e3e2e0; border-radius: 6px; font-family: inherit; font-size: 0.9rem; color: #37352f; background: white; cursor: pointer; outline: none; transition: border-color 0.2s; }
     .setting-select:focus { border-color: #2383e2; }
     
-    /* CSS cho Nút gạt (Toggle) xịn sò */
     .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 22px; }
@@ -20,11 +19,11 @@
     
     <div style="margin-bottom: 25px;">
         <a href="index.php?action=tasks" style="color: #787774; text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 5px;">
-            <i class="fas fa-arrow-left"></i> Quay lại Workspace
+            <i class="fas fa-arrow-left"></i> <?= __('back_to_workspace') ?? 'Quay lại Workspace' ?>
         </a>
     </div>
 
-    <h2 style="margin-top: 0; font-size: 1.5rem; color: #37352f; margin-bottom: 20px;">🛠️ Cài đặt hệ thống</h2>
+    <h2 style="margin-top: 0; font-size: 1.5rem; color: #37352f; margin-bottom: 20px;"><?= __('system_settings_title') ?></h2>
     
     <?php if(!empty($message)): ?>
         <div style="padding: 12px; background: #dbeddb; color: #0f7b6c; border-radius: 6px; margin-bottom: 25px; font-size: 0.9rem; text-align: center; border: 1px solid #c3e2c3;">
@@ -36,8 +35,8 @@
         
         <div class="setting-group">
             <div>
-                <span class="setting-label">Thông báo hệ thống</span>
-                <span class="setting-desc">Nhận thông báo qua Email khi có việc sắp tới hạn</span>
+                <span class="setting-label"><?= __('sys_notif_label') ?></span>
+                <span class="setting-desc"><?= __('sys_notif_desc') ?></span>
             </div>
             <label class="switch">
                 <input type="checkbox" name="notifications" <?= (!isset($settings['notifications']) || $settings['notifications'] == 1) ? 'checked' : '' ?>>
@@ -47,8 +46,8 @@
 
         <div class="setting-group">
             <div>
-                <span class="setting-label">Ngôn ngữ (Language)</span>
-                <span class="setting-desc">Chọn ngôn ngữ hiển thị cho giao diện</span>
+                <span class="setting-label"><?= __('language_lbl') ?></span>
+                <span class="setting-desc"><?= __('language_desc') ?></span>
             </div>
             <select name="language" class="setting-select">
                 <option value="vi" <?= (isset($settings['language']) && $settings['language'] == 'vi') ? 'selected' : '' ?>>🇻🇳 Tiếng Việt</option>
@@ -58,8 +57,8 @@
 
         <div class="setting-group" style="border-bottom: none; margin-bottom: 20px;">
             <div>
-                <span class="setting-label">Múi giờ (Timezone)</span>
-                <span class="setting-desc">Đồng bộ thời gian cho các công việc</span>
+                <span class="setting-label"><?= __('timezone_lbl') ?></span>
+                <span class="setting-desc"><?= __('timezone_desc') ?></span>
             </div>
             <select name="timezone" class="setting-select">
                 <option value="Asia/Ho_Chi_Minh" <?= (isset($settings['timezone']) && $settings['timezone'] == 'Asia/Ho_Chi_Minh') ? 'selected' : '' ?>>GMT+7 (Hồ Chí Minh)</option>
@@ -69,7 +68,7 @@
         </div>
 
         <button type="submit" style="background: #2383e2; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: 500; font-size: 0.95rem; transition: background 0.2s;">
-            Lưu cài đặt
+            <?= __('btn_save_settings') ?>
         </button>
     </form>
 </div>

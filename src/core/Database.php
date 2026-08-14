@@ -22,6 +22,8 @@ class Database {
                 $this->username,
                 $this->password
             );
+            $tz = date('P');
+            $this->conn->exec("SET time_zone = '{$tz}';");
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch(PDOException $e) {
             die("Lỗi kết nối Cơ sở dữ liệu: " . $e->getMessage());

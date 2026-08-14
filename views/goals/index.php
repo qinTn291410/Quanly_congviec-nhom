@@ -14,7 +14,6 @@ foreach($goals as $g) {
     $completed = $g['completed_tasks'] ?? 0;
     $percent = $total > 0 ? round(($completed / $total) * 100) : 0;
     
-    // Thêm key percent vào mảng để dùng lại ở dưới cho tiện
     $g['percent'] = $percent;
     
     if($total > 0 && $percent == 100) {
@@ -24,14 +23,12 @@ foreach($goals as $g) {
     }
 }
 
-// Màu sắc cho từng loại mục tiêu
 $typeColors = [
     'Tuần' => ['bg' => '#e8f3fb', 'text' => '#0b6e99'],
     'Tháng' => ['bg' => '#f4e0f9', 'text' => '#8f24b2'],
     'Quý' => ['bg' => '#fdecc8', 'text' => '#ad7f11']
 ];
 
-// Hàm render thẻ Goal (tạo hàm để tái sử dụng cho gọn code)
 function renderGoalCard($g, $typeColors, $isCompleted = false) {
     $color = $typeColors[$g['type']] ?? $typeColors['Tuần'];
     $progressBarColor = $isCompleted ? '#0f7b6c' : '#2383e2';
@@ -73,13 +70,13 @@ function renderGoalCard($g, $typeColors, $isCompleted = false) {
 ?>
 
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <h1 style="font-size: 1.8rem; margin: 0;">Mục tiêu của tôi</h1>
+    <h1 style="font-size: 1.8rem; margin: 0;"><?= __('goals_title') ?></h1>
     <button onclick="document.getElementById('goalModal').style.display='block'" style="background: #2383e2; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: 500;">
-        + Thêm Mục tiêu
+        <?= __('add_goal') ?>
     </button>
 </div>
 
-<h2 style="font-size: 1.2rem; color: #37352f; margin-top: 30px; margin-bottom: 15px;"><i class="fas fa-spinner fa-spin" style="margin-right: 8px; color: #2383e2;"></i>Đang thực hiện</h2>
+<h2 style="font-size: 1.2rem; color: #37352f; margin-top: 30px; margin-bottom: 15px;"><i class="fas fa-spinner fa-spin" style="margin-right: 8px; color: #2383e2;"></i><?= __('goals_in_progress') ?></h2>
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
     <?php 
     if(empty($activeGoals)) {

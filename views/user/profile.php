@@ -42,11 +42,11 @@
     
     <div style="margin-bottom: 25px;">
         <a href="index.php?action=tasks" style="color: #787774; text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 5px; transition: color 0.2s;">
-            <i class="fas fa-arrow-left"></i> Quay lại Workspace
+            <i class="fas fa-arrow-left"></i> <?= __('back_to_workspace') ?? 'Quay lại Workspace' ?>
         </a>
     </div>
 
-    <h2 style="margin-top: 0; font-size: 1.5rem; color: #37352f; margin-bottom: 20px;">⚙️ Cài đặt hồ sơ</h2>
+    <h2 style="margin-top: 0; font-size: 1.5rem; color: #37352f; margin-bottom: 20px;"><?= __('profile_settings_title') ?></h2>
     
     <?php if(!empty($message)): ?>
         <div style="padding: 12px; background: #dbeddb; color: #28453c; border-radius: 6px; margin-bottom: 25px; font-size: 0.9rem; text-align: center;">
@@ -65,7 +65,7 @@
             
             <div style="margin-top: 15px;">
                 <label for="avatar-upload" class="btn-upload">
-                    <i class="fas fa-camera" style="margin-right: 5px; color: #787774;"></i> Đổi ảnh đại diện
+                    <i class="fas fa-camera" style="margin-right: 5px; color: #787774;"></i> <?= __('btn_change_avatar') ?>
                 </label>
                 <input id="avatar-upload" type="file" name="avatar" accept="image/*" style="display: none;" onchange="document.getElementById('file-name').textContent = this.files[0].name;">
                 <div id="file-name" style="font-size: 0.75rem; color: #787774; margin-top: 8px;"></div>
@@ -73,39 +73,39 @@
         </div>
 
         <div style="margin-bottom: 20px;">
-            <label class="profile-label">Họ và tên</label>
+            <label class="profile-label"><?= __('lbl_fullname') ?></label>
             <input type="text" name="fullname" class="profile-input" value="<?= htmlspecialchars($user['fullname']) ?>" required>
         </div>
 
         <div style="margin-bottom: 20px;">
-            <label class="profile-label">Email</label>
+            <label class="profile-label"><?= __('email_label') ?></label>
             <input type="email" name="email" class="profile-input" value="<?= htmlspecialchars($user['email']) ?>" required>
         </div>
 
         <div style="display: flex; gap: 15px; margin-bottom: 20px;">
             <div style="flex: 1;">
-                <label class="profile-label">Số điện thoại</label>
-                <input type="text" name="phone" class="profile-input" value="<?= htmlspecialchars($user['phone'] ?? '') ?>" placeholder="Ví dụ: 0987654321">
+                <label class="profile-label"><?= __('lbl_phone') ?></label>
+                <input type="text" name="phone" class="profile-input" value="<?= htmlspecialchars($user['phone'] ?? '') ?>" placeholder="<?= __('phone_placeholder') ?>">
             </div>
             
             <div style="flex: 1;">
-                <label class="profile-label">Ngày sinh</label>
+                <label class="profile-label"><?= __('lbl_dob') ?></label>
                 <input type="date" name="dob" class="profile-input" value="<?= htmlspecialchars($user['dob'] ?? '') ?>">
             </div>
         </div>
 
         <div style="margin-bottom: 20px;">
-            <label class="profile-label">Địa chỉ</label>
-            <input type="text" name="address" class="profile-input" value="<?= htmlspecialchars($user['address'] ?? '') ?>" placeholder="Ví dụ: Quận 1, TP. HCM...">
+            <label class="profile-label"><?= __('lbl_address') ?></label>
+            <input type="text" name="address" class="profile-input" value="<?= htmlspecialchars($user['address'] ?? '') ?>" placeholder="<?= __('address_placeholder') ?>">
         </div>
 
         <div style="margin-bottom: 30px;">
-            <label class="profile-label">Giới thiệu bản thân (Bio)</label>
-            <textarea name="bio" class="profile-input" rows="3" placeholder="Viết vài dòng giới thiệu về bản thân..." style="resize: vertical;"><?= htmlspecialchars($user['bio'] ?? '') ?></textarea>
+            <label class="profile-label"><?= __('lbl_bio') ?></label>
+            <textarea name="bio" class="profile-input" rows="3" placeholder="<?= __('bio_placeholder') ?>" style="resize: vertical;"><?= htmlspecialchars($user['bio'] ?? '') ?></textarea>
         </div>
 
         <button type="submit" style="background: #2383e2; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: 500; font-size: 0.95rem; transition: background 0.2s;">
-            Lưu thay đổi
+            <?= __('btn_save_changes') ?>
         </button>
     </form>
 </div>

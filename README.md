@@ -1,13 +1,9 @@
-==================================================
+
 ĐỒ ÁN: HỆ THỐNG QUẢN LÝ CÔNG VIỆC (TASK MANAGER)
-==================================================
 
-1. THÔNG TIN NHÓM THỰC HIỆN:
+1. THÔNG TIN NGƯỜI THỰC HIỆN:
 
-- Thành viên 1: Huỳnh Bá Việt Tín - MSSV: 227060140
-- Thành viên 2:
-- Thành viên 3:
-- Thành viên 4:
+Huỳnh Bá Việt Tín - MSSV: 227060140
 
 2. YÊU CẦU HỆ THỐNG MÔI TRƯỜNG:
 
@@ -22,7 +18,7 @@
    Bước 4: Tạo một Database mới mang tên "quanly_congviec".
    Bước 5: Chọn tab "Import" (Nhập), duyệt tìm đến file "quanly_congviec.sql" nằm trong thư mục "Database" của source code và bấm thực hiện.
    Bước 6: Truy cập đồ án tại đường dẫn:
-   http://localhos/task_manager/public/index.php
+   http://localhost/task_manager/public/index.php
 
 4. TÀI KHOẢN TEST SẴN CÓ:
 
@@ -37,9 +33,10 @@
 5. CÁC TÍNH NĂNG NỔI BẬT ĐÁNG CHÚ Ý (Highlight):
 
 - Kiến trúc thư mục chuẩn MVC (Model - View - Controller).
-- Không gian làm việc cá nhân & nhóm riêng biệt, kéo thả trạng thái Kanban.
+- Không gian làm việc cá nhân & nhóm riêng biệt, tùy chỉnh trạng thái Kanban.
 - Dashboard thống kê trực quan (Doughnut Chart, Line Chart) theo thời gian thực.
 - Tính năng xuất báo cáo chuyên nghiệp: Xuất file Excel (.csv) và In PDF (CSS tối ưu ẩn menu).
 - Hệ thống thông báo Real-time Polling (Quét cảnh báo mà không cần F5 trang).
 - Cấu hình hệ thống Động (Dynamic Settings): Admin thêm nhãn, độ ưu tiên, cấu hình SMTP sẽ tự động cập nhật ra giao diện người dùng.
-- # Tích hợp thay đổi Múi giờ (Timezone) cho hệ thống và bộ khung Đa ngôn ngữ (i18n).
+- Hệ thống Đa ngôn ngữ hoàn chỉnh (i18n - Tiếng Việt / Tiếng Anh) toàn diện toàn bộ trang web từ Menu, Cài đặt, Dashboard, Công việc cá nhân cho đến Quản trị Admin và Dự án nhóm.
+- Đồng bộ Múi giờ chuẩn xác (Timezone Synchronization) giữa PHP và kết nối cơ sở dữ liệu MySQL (PDO connection timezone), hỗ trợ chuyển đổi linh hoạt theo cấu hình người dùng (VD: Hồ Chí Minh, Tokyo,...).

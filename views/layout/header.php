@@ -7,38 +7,32 @@ if (!isset($_SESSION['user_id'])) {
 $fullname = $_SESSION['fullname'] ?? 'Admin';
 $firstChar = mb_substr($fullname, 0, 1, "UTF-8");
 
-$userTimezone = $_SESSION['timezone'] ?? 'Asia/Ho_Chi_Minh';
-date_default_timezone_set($userTimezone);
-
 $lang = $_SESSION['language'] ?? 'vi';
+global $dictionary;
+$dictionary = require PROJECT_ROOT . "/lang/{$lang}.php";
 
-$menu_home = ($lang === 'en') ? 'Dashboard' : 'Trang chủ';
-$menu_goals = ($lang === 'en') ? 'Goals' : 'Mục tiêu';
-$menu_tasks = ($lang === 'en') ? 'Personal Tasks' : 'Việc cá nhân';
-$menu_team = ($lang === 'en') ? 'Team Workspace' : 'Việc nhóm';
-$menu_calendar = ($lang === 'en') ? 'Calendar' : 'Lịch làm việc';
-$menu_logout = ($lang === 'en') ? 'Logout' : 'Đăng xuất';
-$menu_settings = ($lang === 'en') ? 'System Settings' : 'Cài đặt hệ thống';
-
-$dueCount = 0;
-if (isset($_SESSION['user_id'])) {
-    try {
-        $db = \Tinhu\TaskManager\Core\Database::getInstance()->getConnection();
-        $uid = $_SESSION['user_id'];
-        
-        $stmt1 = $db->prepare("SELECT COUNT(*) FROM tasks WHERE user_id = ? AND status != 'Done' AND due_date <= CURDATE() AND due_date != '0000-00-00' AND due_date IS NOT NULL");
-        $stmt1->execute([$uid]);
-        $countPersonal = (int)$stmt1->fetchColumn();
-
-        $stmt2 = $db->prepare("SELECT COUNT(*) FROM team_tasks WHERE assigned_to = ? AND status != 'Done' AND due_date <= CURDATE() AND due_date != '0000-00-00' AND due_date IS NOT NULL");
-        $stmt2->execute([$uid]);
-        $countTeam = (int)$stmt2->fetchColumn();
-
-        $dueCount = $countPersonal + $countTeam;
-    } catch (\Exception $e) {
-        // Bỏ qua lỗi nếu có
+if (!function_exists('__')) {
+    function __($keyword) {
+        global $dictionary;
+        return $dictionary[$keyword] ?? $keyword;
     }
 }
+
+$dueCount = 0;
+try {
+    $db = \Tinhu\TaskManager\Core\Database::getInstance()->getConnection();
+    $uid = $_SESSION['user_id'];
+    
+    $stmt1 = $db->prepare("SELECT COUNT(*) FROM tasks WHERE user_id = ? AND status != 'Done' AND due_date <= CURDATE() AND due_date != '0000-00-00' AND due_date IS NOT NULL");
+    $stmt1->execute([$uid]);
+    $countPersonal = (int)$stmt1->fetchColumn();
+
+    $stmt2 = $db->prepare("SELECT COUNT(*) FROM team_tasks WHERE assigned_to = ? AND status != 'Done' AND due_date <= CURDATE() AND due_date != '0000-00-00' AND due_date IS NOT NULL");
+    $stmt2->execute([$uid]);
+    $countTeam = (int)$stmt2->fetchColumn();
+
+    $dueCount = $countPersonal + $countTeam;
+} catch (\Exception $e) {}
 ?>
 <!DOCTYPE html>
 <html lang="<?= $lang ?>">
@@ -64,29 +58,28 @@ if (isset($_SESSION['user_id'])) {
                 <div style="background: #e03e3e; color: white; width: 28px; height: 28px; min-width: 28px; display: flex; justify-content: center; align-items: center; border-radius: 4px; font-weight: bold; font-size: 0.9rem;">
                     <?= $firstChar ?>
                 </div>
-                
                 <div style="font-weight: 600; font-size: 0.95rem; line-height: 1.2;">
                     <?= htmlspecialchars($fullname) ?>'s Workspace
                 </div>
             </a>
         </div>
 
-        <a href="index.php?action=dashboard" class="menu-item"><i class="fas fa-home"></i> <?= $menu_home ?></a>
-        <a href="index.php?action=goals" class="menu-item"><i class="fas fa-bullseye"></i> <?= $menu_goals ?></a>
-        <a href="index.php?action=tasks" class="menu-item"><i class="fas fa-check-square"></i> <?= $menu_tasks ?></a>
-        <a href="index.php?action=teams" class="menu-item"><i class="fas fa-users"></i> <?= $menu_team ?></a>
-        <a href="index.php?action=calendar" class="menu-item"><i class="far fa-calendar-alt"></i> <?= $menu_calendar ?></a>
+        <a href="index.php?action=dashboard" class="menu-item"><i class="fas fa-home"></i> <?= __('menu_workspace') ?></a>
+        <a href="index.php?action=goals" class="menu-item"><i class="fas fa-bullseye"></i> <?= __('menu_goals') ?></a>
+        <a href="index.php?action=tasks" class="menu-item"><i class="fas fa-check-square"></i> <?= __('menu_tasks') ?></a>
+        <a href="index.php?action=teams" class="menu-item"><i class="fas fa-users"></i> <?= __('menu_teams') ?></a>
+        <a href="index.php?action=calendar" class="menu-item"><i class="far fa-calendar-alt"></i> <?= __('menu_calendar') ?></a>
 
         <div style="margin-top: auto;">
             <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
                 <a href="index.php?action=admin" class="menu-item" style="color: #eb3639; font-weight: bold; background: #fde8e8; margin-bottom: 15px;">
-                    <i class="fas fa-shield-alt"></i> Quản trị Admin
+                    <i class="fas fa-shield-alt"></i> <?= __('menu_admin') ?>
                 </a>
             <?php endif; ?>
 
-            <a href="index.php?action=logout" class="menu-item"><i class="fas fa-sign-out-alt"></i> <?= $menu_logout ?></a>
+            <a href="index.php?action=logout" class="menu-item"><i class="fas fa-sign-out-alt"></i> <?= __('menu_logout') ?></a>
             <a href="index.php?action=settings" style="display: block; padding: 10px 15px; color: var(--text-muted); text-decoration: none; border-radius: 4px; margin-top: 5px;">
-                <i class="fas fa-cog" style="width: 20px;"></i> <?= $menu_settings ?>
+                <i class="fas fa-cog" style="width: 20px;"></i> <?= __('menu_settings') ?>
             </a>
         </div>
     </div>
@@ -97,11 +90,11 @@ if (isset($_SESSION['user_id'])) {
             <div style="background: #fde8e8; border: 1px solid #f9c2c2; color: #eb3639; padding: 12px 20px; border-radius: 6px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; font-size: 0.95rem;">
                 <div>
                     <i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>
-                    <strong><?= ($lang === 'en') ? 'Deadline Warning:' : 'Cảnh báo Deadline:' ?></strong> 
-                    <?= ($lang === 'en') ? "You have <b>$dueCount</b> tasks (Personal & Team) due today or overdue!" : "Bạn đang có <b>$dueCount</b> công việc (Cá nhân & Nhóm) sắp hết hạn hoặc đã quá hạn hôm nay!" ?>
+                    <strong><?= __('deadline_warning') ?></strong> 
+                    <?= sprintf(__('deadline_msg'), $dueCount) ?>
                 </div>
                 <a href="index.php?action=calendar" style="background: #eb3639; color: white; padding: 5px 12px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; font-weight: 500;">
-                    <?= ($lang === 'en') ? 'View Calendar' : 'Xử lý ngay' ?>
+                    <?= __('btn_resolve') ?>
                 </a>
             </div>
         <?php endif; ?>

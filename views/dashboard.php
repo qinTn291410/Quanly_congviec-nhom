@@ -6,7 +6,6 @@ require_once PROJECT_ROOT . '/src/Models/GoalModel.php';
 $db = \Tinhu\TaskManager\Core\Database::getInstance()->getConnection();
 $userId = $_SESSION['user_id'];
 
-// 1. TÍNH TOÁN SỐ LIỆU GỘP (CÁ NHÂN + NHÓM)
 $stmt = $db->prepare("SELECT COUNT(*) as t, SUM(CASE WHEN status = 'Done' THEN 1 ELSE 0 END) as d, SUM(CASE WHEN status != 'Done' THEN 1 ELSE 0 END) as a, SUM(CASE WHEN status != 'Done' AND due_date < CURDATE() AND due_date != '0000-00-00' THEN 1 ELSE 0 END) as o FROM tasks WHERE user_id = ?");
 $stmt->execute([$userId]);
 $personalStats = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -20,16 +19,13 @@ $doneTasks    = ($personalStats['d'] ?? 0) + ($teamStats['d'] ?? 0);
 $activeTasks  = ($personalStats['a'] ?? 0) + ($teamStats['a'] ?? 0);
 $overdueTasks = ($personalStats['o'] ?? 0) + ($teamStats['o'] ?? 0);
 
-// 2. LẤY MỤC TIÊU (CÁ NHÂN)
 $goalModel = new \Tinhu\TaskManager\Models\GoalModel();
 $goals = $goalModel->getGoalsWithProgress($userId);
 
-// 3. LẤY TIẾN ĐỘ DỰ ÁN (NHÓM)
 $stmt = $db->prepare("SELECT p.id, p.name, COUNT(tt.id) as total_tasks, SUM(CASE WHEN tt.status = 'Done' THEN 1 ELSE 0 END) as done_tasks FROM projects p JOIN team_members tm ON p.team_id = tm.team_id LEFT JOIN team_tasks tt ON p.id = tt.project_id WHERE tm.user_id = ? GROUP BY p.id, p.name LIMIT 5");
 $stmt->execute([$userId]);
 $teamProjects = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-// 4. LẤY VIỆC SẮP TỚI HẠN (GỘP)
 $stmt1 = $db->prepare("SELECT id, title, due_date, 'personal' as type, 0 as project_id FROM tasks WHERE user_id = ? AND status != 'Done' AND due_date != '0000-00-00' AND due_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)");
 $stmt1->execute([$userId]);
 $pTasks = $stmt1->fetchAll(\PDO::FETCH_ASSOC);
@@ -43,14 +39,14 @@ usort($upcomingTasks, function($a, $b) { return strtotime($a['due_date']) - strt
 $upcomingTasks = array_slice($upcomingTasks, 0, 6);
 
 $hour = date('H');
-if ($hour < 12) $greeting = 'Chào buổi sáng';
-elseif ($hour < 18) $greeting = 'Chào buổi chiều';
-else $greeting = 'Chào buổi tối';
+if ($hour < 12) $greeting = __('dash_greeting');
+elseif ($hour < 18) $greeting = __('dash_greeting');
+else $greeting = __('dash_greeting');
 ?>
 
 <div style="margin-bottom: 30px;">
     <h1 style="font-size: 2rem; color: #37352f; margin-bottom: 5px;"><?= $greeting ?>, <?= htmlspecialchars($_SESSION['fullname'] ?? 'Sếp') ?>! </h1>
-    <p style="color: #787774; font-size: 1rem;">Đây là tổng quan toàn bộ công việc (Cá nhân & Nhóm) hôm nay.</p>
+    <p style="color: #787774; font-size: 1rem;"><?= __('dash_sub_greeting') ?></p>
 </div>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
@@ -58,28 +54,28 @@ else $greeting = 'Chào buổi tối';
         <div style="background: #e8f3fb; color: #0b6e99; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;"><i class="fas fa-tasks"></i></div>
         <div>
             <div style="font-size: 2rem; font-weight: bold; color: #37352f;"><?= $totalTasks ?></div>
-            <div style="color: #787774; font-size: 0.9rem; font-weight: 500;">Tổng số công việc</div>
+            <div style="color: #787774; font-size: 0.9rem; font-weight: 500;"><?= __('dash_total_tasks') ?></div>
         </div>
     </div>
     <div style="background: white; padding: 20px; border-radius: 10px; border: 1px solid #e3e2e0; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 15px;">
         <div style="background: #edf3ec; color: #0f7b6c; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;"><i class="fas fa-check-circle"></i></div>
         <div>
             <div style="font-size: 2rem; font-weight: bold; color: #37352f;"><?= $doneTasks ?></div>
-            <div style="color: #787774; font-size: 0.9rem; font-weight: 500;">Đã hoàn thành</div>
+            <div style="color: #787774; font-size: 0.9rem; font-weight: 500;"><?= __('dash_completed') ?></div>
         </div>
     </div>
     <div style="background: white; padding: 20px; border-radius: 10px; border: 1px solid #e3e2e0; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 15px;">
         <div style="background: #fdf3c0; color: #d9730d; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;"><i class="fas fa-spinner"></i></div>
         <div>
             <div style="font-size: 2rem; font-weight: bold; color: #37352f;"><?= $activeTasks ?></div>
-            <div style="color: #787774; font-size: 0.9rem; font-weight: 500;">Đang tiến hành</div>
+            <div style="color: #787774; font-size: 0.9rem; font-weight: 500;"><?= __('dash_in_progress') ?></div>
         </div>
     </div>
     <div style="background: white; padding: 20px; border-radius: 10px; border: 1px solid #f9c2c2; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 15px;">
         <div style="background: #fde8e8; color: #eb3639; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;"><i class="fas fa-exclamation-triangle"></i></div>
         <div>
             <div style="font-size: 2rem; font-weight: bold; color: #eb3639;"><?= $overdueTasks ?></div>
-            <div style="color: #eb3639; font-size: 0.9rem; font-weight: 500;">Quá hạn</div>
+            <div style="color: #eb3639; font-size: 0.9rem; font-weight: 500;"><?= __('dash_overdue_total') ?></div>
         </div>
     </div>
 </div>
@@ -88,12 +84,12 @@ else $greeting = 'Chào buổi tối';
     <div>
         <div style="background: white; padding: 25px; border-radius: 10px; border: 1px solid #e3e2e0; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 30px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                <h2 style="font-size: 1.2rem; margin: 0; color: #37352f;"><i class="fas fa-bullseye" style="color: #2383e2; margin-right: 8px;"></i>Tiến độ mục tiêu cá nhân</h2>
-                <a href="index.php?action=goals" style="color: #2383e2; text-decoration: none; font-size: 0.9rem; font-weight: 500;">Quản lý &rarr;</a>
+                <h2 style="font-size: 1.2rem; margin: 0; color: #37352f;"><i class="fas fa-bullseye" style="color: #2383e2; margin-right: 8px;"></i><?= __('dash_goal_progress') ?></h2>
+                <a href="index.php?action=goals" style="color: #2383e2; text-decoration: none; font-size: 0.9rem; font-weight: 500;"><?= __('dash_manage') ?></a>
             </div>
             
             <?php if(empty($goals)): ?>
-                <p style="color: #787774; font-size: 0.95rem;">Sếp chưa có mục tiêu nào. <a href="index.php?action=goals" style="color:#2383e2;">Tạo ngay</a></p>
+                <p style="color: #787774; font-size: 0.95rem;"><?= __('dash_no_goals') ?> <a href="index.php?action=goals" style="color:#2383e2;"><?= __('dash_create_now') ?></a></p>
             <?php else: ?>
                 <?php foreach(array_slice($goals, 0, 5) as $g): ?>
                     <?php 
@@ -117,8 +113,8 @@ else $greeting = 'Chào buổi tối';
 
         <div style="background: white; padding: 25px; border-radius: 10px; border: 1px solid #e3e2e0; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                <h2 style="font-size: 1.2rem; margin: 0; color: #37352f;"><i class="fas fa-project-diagram" style="color: #0f7b6c; margin-right: 8px;"></i>Tiến độ Dự án Nhóm</h2>
-                <a href="index.php?action=teams" style="color: #0f7b6c; text-decoration: none; font-size: 0.9rem; font-weight: 500;">Xem tất cả &rarr;</a>
+                <h2 style="font-size: 1.2rem; margin: 0; color: #37352f;"><i class="fas fa-project-diagram" style="color: #0f7b6c; margin-right: 8px;"></i><?= __('dash_team_projects') ?></h2>
+                <a href="index.php?action=teams" style="color: #0f7b6c; text-decoration: none; font-size: 0.9rem; font-weight: 500;"><?= __('dash_view_all') ?></a>
             </div>
             
             <?php if(empty($teamProjects)): ?>
@@ -146,7 +142,7 @@ else $greeting = 'Chào buổi tối';
     </div>
 
     <div style="background: white; padding: 25px; border-radius: 10px; border: 1px solid #e3e2e0; box-shadow: 0 2px 4px rgba(0,0,0,0.02); height: fit-content;">
-        <h2 style="font-size: 1.2rem; margin: 0 0 25px 0; color: #37352f;"><i class="fas fa-clock" style="color: #d9730d; margin-right: 8px;"></i>Sắp đến hạn</h2>
+        <h2 style="font-size: 1.2rem; margin: 0 0 25px 0; color: #37352f;"><i class="fas fa-clock" style="color: #d9730d; margin-right: 8px;"></i><?= __('dash_upcoming_deadline') ?></h2>
         
         <?php if(empty($upcomingTasks)): ?>
             <div style="text-align: center; padding: 20px 0; color: #787774;">

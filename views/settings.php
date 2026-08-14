@@ -12,12 +12,12 @@
 <div style="max-width: 700px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; border: 1px solid #e3e2e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
     <div style="margin-bottom: 20px;">
         <a href="index.php?action=dashboard" style="color: #787774; text-decoration: none; font-size: 0.95rem;">
-            <i class="fas fa-arrow-left"></i> Quay lại Workspace
+            <i class="fas fa-arrow-left"></i> <?= __('back_to_workspace') ?>
         </a>
     </div>
 
     <h1 style="font-size: 1.8rem; margin: 0 0 30px 0; color: #37352f; display: flex; align-items: center; gap: 10px;">
-        <i class="fas fa-tools" style="color: #787774;"></i> Cài đặt hệ thống
+        <i class="fas fa-tools" style="color: #787774;"></i> <?= __('settings_title') ?>
     </h1>
 
     <?php if (isset($_SESSION['system_alert'])): ?>
@@ -30,8 +30,8 @@
     <form method="POST" action="index.php?action=settings">
         <div style="margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <strong style="font-size: 1.05rem; color: #37352f;">Nhắc nhở qua Email</strong>
-                <p style="margin: 5px 0 0 0; font-size: 0.85rem; color: #787774;">Hệ thống tự động gửi Email khi có việc sắp trễ hạn</p>
+                <strong style="font-size: 1.05rem; color: #37352f;"><?= __('notify_email') ?></strong>
+                <p style="margin: 5px 0 0 0; font-size: 0.85rem; color: #787774;"><?= __('notify_email_desc') ?></p>
             </div>
             
             <label class="toggle-switch">
@@ -42,8 +42,8 @@
 
         <div style="margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <strong style="font-size: 1.05rem; color: #37352f;">Thông báo màn hình (Popup)</strong>
-                <p style="margin: 5px 0 0 0; font-size: 0.85rem; color: #787774;">Nhận thông báo Real-time khi được giao việc, đổi trạng thái</p>
+                <strong style="font-size: 1.05rem; color: #37352f;"><?= __('notify_popup') ?></strong>
+                <p style="margin: 5px 0 0 0; font-size: 0.85rem; color: #787774;"><?= __('notify_popup_desc') ?></p>
             </div>
             
             <label class="toggle-switch">
@@ -54,8 +54,8 @@
 
         <div style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <strong style="font-size: 1.05rem; color: #37352f;">Ngôn ngữ (Language)</strong>
-                <p style="margin: 5px 0 0 0; font-size: 0.85rem; color: #787774;">Chọn ngôn ngữ hiển thị cho giao diện</p>
+                <strong style="font-size: 1.05rem; color: #37352f;"><?= __('language_lbl') ?></strong>
+                <p style="margin: 5px 0 0 0; font-size: 0.85rem; color: #787774;"><?= __('language_desc') ?></p>
             </div>
             <?php $currentLang = $_SESSION['language'] ?? 'vi'; ?>
             <select name="language" style="padding: 8px 15px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem; outline: none; background: white;">
@@ -66,8 +66,8 @@
 
         <div style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <strong style="font-size: 1.05rem; color: #37352f;">Múi giờ (Timezone)</strong>
-                <p style="margin: 5px 0 0 0; font-size: 0.85rem; color: #787774;">Đồng bộ thời gian cho các công việc</p>
+                <strong style="font-size: 1.05rem; color: #37352f;"><?= __('timezone_lbl') ?></strong>
+                <p style="margin: 5px 0 0 0; font-size: 0.85rem; color: #787774;"><?= __('timezone_desc') ?></p>
             </div>
             <?php $currentTz = $_SESSION['timezone'] ?? 'Asia/Ho_Chi_Minh'; ?>
             <select name="timezone" style="padding: 8px 15px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem; outline: none; background: white;">
@@ -77,7 +77,7 @@
         </div>
 
         <button type="submit" style="width: 100%; background: #2383e2; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: 0.2s;">
-            Lưu cài đặt
+            <?= __('btn_save_settings') ?>
         </button>
     </form>
 </div>

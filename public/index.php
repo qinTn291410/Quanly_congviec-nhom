@@ -1,5 +1,7 @@
 <?php
 session_start();
+$user_timezone = $_SESSION['timezone'] ?? 'Asia/Ho_Chi_Minh';
+date_default_timezone_set($user_timezone);
 define('PROJECT_ROOT', dirname(__DIR__));
 require_once PROJECT_ROOT . '/vendor/autoload.php';
 require_once __DIR__ . '/../vendor/autoload.php';

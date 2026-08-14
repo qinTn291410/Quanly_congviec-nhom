@@ -20,23 +20,29 @@
                     <p style="font-style: italic;"><?= __('empty_task_comments') ?></p>
                 </div>
             <?php else: ?>
-                <?php foreach($comments as $c): ?>
-                    <div style="margin-bottom: 20px; display: flex; gap: 15px; <?= ($c['user_id'] == $_SESSION['user_id']) ? 'flex-direction: row-reverse;' : '' ?>">
-                        <div style="background: #f0f0f0; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #787774; flex-shrink: 0;">
-                            <?= strtoupper(substr($c['fullname'], 0, 1)) ?>
-                        </div>
+                <?php foreach($comments as $c): 
+                    $isMe = ($c['user_id'] == $_SESSION['user_id']);
+                    // HIỂN THỊ AVATAR NGƯỜI CHAT
+                    $chatAvatar = $c['avatar'] ?? '';
+                    $chatAvatarUrl = (!empty($chatAvatar) && $chatAvatar !== 'default.png') 
+                        ? '/task_manager/public/uploads/' . htmlspecialchars($chatAvatar) 
+                        : 'https://ui-avatars.com/api/?name=' . urlencode($c['fullname']) . '&background=random';
+                ?>
+                    <div style="margin-bottom: 20px; display: flex; gap: 15px; <?= $isMe ? 'flex-direction: row-reverse;' : '' ?>">
+                        <img src="<?= $chatAvatarUrl ?>" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid <?= $isMe ? '#b9d5e5' : '#e3e2e0' ?>; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        
                         <div style="max-width: 75%;">
-                            <div style="font-size: 0.8rem; color: #787774; margin-bottom: 5px; <?= ($c['user_id'] == $_SESSION['user_id']) ? 'text-align: right;' : '' ?>">
-                                <strong><?= ($c['user_id'] == $_SESSION['user_id']) ? __('you_tag') : htmlspecialchars($c['fullname']) ?></strong> • <?= date('d/m/Y H:i', strtotime($c['created_at'])) ?>
+                            <div style="font-size: 0.8rem; color: #787774; margin-bottom: 5px; <?= $isMe ? 'text-align: right;' : '' ?>">
+                                <strong><?= $isMe ? __('you_tag') : htmlspecialchars($c['fullname']) ?></strong> • <?= date('d/m/Y H:i', strtotime($c['created_at'])) ?>
                             </div>
-                            <div style="background: <?= ($c['user_id'] == $_SESSION['user_id']) ? '#e8f3fb' : '#f7f7f5' ?>; padding: 12px 15px; border-radius: 12px; font-size: 0.95rem; color: #37352f; line-height: 1.5; border: 1px solid <?= ($c['user_id'] == $_SESSION['user_id']) ? '#b9d5e5' : '#e3e2e0' ?>;">
+                            <div style="background: <?= $isMe ? '#e8f3fb' : '#f7f7f5' ?>; padding: 12px 15px; border-radius: 12px; font-size: 0.95rem; color: #37352f; line-height: 1.5; border: 1px solid <?= $isMe ? '#b9d5e5' : '#e3e2e0' ?>;">
                                 <?php if(!empty($c['content'])): ?>
                                     <?= nl2br(htmlspecialchars($c['content'])) ?>
                                 <?php endif; ?>
                                 
                                 <?php if(!empty($c['file_url'])): ?>
                                     <div style="margin-top: <?= !empty($c['content']) ? '10px' : '0' ?>; padding-top: <?= !empty($c['content']) ? '10px' : '0' ?>; border-top: <?= !empty($c['content']) ? '1px dashed rgba(0,0,0,0.1)' : 'none' ?>;">
-                                        <a href="/public/uploads/teams/<?= htmlspecialchars($c['file_url']) ?>" target="_blank" style="color: #2383e2; text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 5px;">
+                                        <a href="/task_manager/public/uploads/teams/<?= htmlspecialchars($c['file_url']) ?>" target="_blank" style="color: #2383e2; text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 5px;">
                                             <i class="fas fa-paperclip"></i> <?= __('attachment_label') ?> <?= htmlspecialchars($c['file_url']) ?>
                                         </a>
                                     </div>

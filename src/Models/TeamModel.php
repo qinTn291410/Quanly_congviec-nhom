@@ -183,7 +183,7 @@ class TeamModel {
     }
 
     public function getTaskComments($taskId) {
-        $sql = "SELECT c.*, u.fullname 
+        $sql = "SELECT c.*, u.fullname, u.avatar
                 FROM team_task_comments c 
                 JOIN users u ON c.user_id = u.id 
                 WHERE c.task_id = :task_id 
@@ -266,7 +266,7 @@ class TeamModel {
     }
 
     public function getProjectComments($projectId) {
-        $sql = "SELECT pc.*, u.fullname FROM project_comments pc LEFT JOIN users u ON pc.user_id = u.id WHERE pc.project_id = ? ORDER BY pc.created_at ASC";
+        $sql = "SELECT pc.*, u.fullname, u.avatar FROM project_comments pc LEFT JOIN users u ON pc.user_id = u.id WHERE pc.project_id = ? ORDER BY pc.created_at ASC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$projectId]);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -279,7 +279,7 @@ class TeamModel {
     }
 
     public function getTeamComments($teamId) {
-        $sql = "SELECT tc.*, u.fullname FROM team_comments tc LEFT JOIN users u ON tc.user_id = u.id WHERE tc.team_id = ? ORDER BY tc.created_at ASC";
+        $sql = "SELECT tc.*, u.fullname, u.avatar FROM team_comments tc LEFT JOIN users u ON tc.user_id = u.id WHERE tc.team_id = ? ORDER BY tc.created_at ASC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$teamId]);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);

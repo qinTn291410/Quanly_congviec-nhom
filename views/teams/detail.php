@@ -188,11 +188,15 @@ foreach($members as $m) {
         <?php else: ?>
             <?php foreach($teamComments as $c): 
                 $isMe = ($c['user_id'] == $_SESSION['user_id']);
+                // HIỂN THỊ AVATAR NGƯỜI CHAT
+                $chatAvatar = $c['avatar'] ?? '';
+                $chatAvatarUrl = (!empty($chatAvatar) && $chatAvatar !== 'default.png') 
+                    ? '/task_manager/public/uploads/' . htmlspecialchars($chatAvatar) 
+                    : 'https://ui-avatars.com/api/?name=' . urlencode($c['fullname']) . '&background=random';
             ?>
                 <div style="display: flex; gap: 12px; margin-bottom: 20px; <?= $isMe ? 'flex-direction: row-reverse;' : '' ?>">
-                    <div style="background: <?= $isMe ? '#2383e2' : '#e3e2e0' ?>; color: <?= $isMe ? 'white' : '#37352f' ?>; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
-                        <?= strtoupper(substr($c['fullname'], 0, 1)) ?>
-                    </div>
+                    <img src="<?= $chatAvatarUrl ?>" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid <?= $isMe ? '#b9d5e5' : '#e3e2e0' ?>; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    
                     <div style="max-width: 75%;">
                         <div style="font-size: 0.8rem; color: #787774; margin-bottom: 4px; <?= $isMe ? 'text-align: right;' : '' ?>">
                             <strong><?= $isMe ? __('you_tag') : htmlspecialchars($c['fullname']) ?></strong> • <?= date('H:i d/m', strtotime($c['created_at'])) ?>

@@ -5,8 +5,6 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $fullname = $_SESSION['fullname'] ?? 'Admin';
-$firstChar = mb_substr($fullname, 0, 1, "UTF-8");
-
 $lang = $_SESSION['language'] ?? 'vi';
 global $dictionary;
 $dictionary = require PROJECT_ROOT . "/lang/{$lang}.php";
@@ -19,6 +17,9 @@ if (!function_exists('__')) {
 }
 
 $dueCount = 0;
+// 1. Tạo URL avatar mặc định nếu chưa có ảnh
+$userAvatarPath = 'https://ui-avatars.com/api/?name=' . urlencode($fullname) . '&background=random';
+
 try {
     $db = \Tinhu\TaskManager\Core\Database::getInstance()->getConnection();
     $uid = $_SESSION['user_id'];
@@ -32,6 +33,15 @@ try {
     $countTeam = (int)$stmt2->fetchColumn();
 
     $dueCount = $countPersonal + $countTeam;
+
+    // 2. Lấy Avatar từ Database
+    $stmtAvatar = $db->prepare("SELECT avatar FROM users WHERE id = ?");
+    $stmtAvatar->execute([$uid]);
+    $dbAvatar = $stmtAvatar->fetchColumn();
+    
+    if (!empty($dbAvatar) && $dbAvatar !== 'default.png') {
+        $userAvatarPath = '/task_manager/public/uploads/' . $dbAvatar;
+    }
 } catch (\Exception $e) {}
 ?>
 <!DOCTYPE html>
@@ -55,9 +65,10 @@ try {
     <div class="sidebar">
         <div class="workspace-header">
             <a href="index.php?action=profile" style="display: flex; align-items: center; gap: 10px; padding: 10px; text-decoration: none; color: inherit; border-radius: 6px; margin-bottom: 20px;">
-                <div style="background: #e03e3e; color: white; width: 28px; height: 28px; min-width: 28px; display: flex; justify-content: center; align-items: center; border-radius: 4px; font-weight: bold; font-size: 0.9rem;">
-                    <?= $firstChar ?>
-                </div>
+                
+                <!-- 3. HIỂN THỊ AVATAR TRÊN MENU -->
+                <img src="<?= $userAvatarPath ?>" style="width: 32px; height: 32px; min-width: 32px; border-radius: 6px; object-fit: cover; border: 1px solid #e3e2e0;">
+                
                 <div style="font-weight: 600; font-size: 0.95rem; line-height: 1.2;">
                     <?= htmlspecialchars($fullname) ?>'s Workspace
                 </div>

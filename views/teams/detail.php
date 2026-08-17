@@ -1,13 +1,20 @@
 <?php require_once PROJECT_ROOT . '/views/layout/header.php'; ?>
 
 <?php
-$isLeader = false;
+// TÌM ROLE CỦA BẢN THÂN TRONG NHÓM NÀY
+$myRole = 'Member';
 foreach($members as $m) {
-    if($m['id'] == $_SESSION['user_id'] && $m['role'] == 'Leader') {
-        $isLeader = true;
+    if($m['id'] == $_SESSION['user_id']) {
+        $myRole = $m['role'];
         break;
     }
 }
+
+// PHÂN QUYỀN GIAO DIỆN
+$isLeader = ($myRole === 'Leader');
+$isManager = ($myRole === 'Manager');
+$canManageProject = ($isLeader || $isManager); // Leader và Manager được tạo dự án/mời người
+$canChat = ($myRole !== 'Viewer'); // Viewer bị khóa mõm
 ?>
 
 <?php if (isset($_SESSION['system_alert'])): ?>
@@ -44,12 +51,19 @@ foreach($members as $m) {
                     </td>
                     <td style="padding: 15px 10px; color: #787774;"><?= htmlspecialchars($m['email']) ?></td>
                     <td style="padding: 15px 10px; display: flex; align-items: center;">
+                        
+                        <!-- RENDER BADGE ROLE MỚI -->
                         <?php if($m['role'] == 'Leader'): ?>
-                            <span style="background: #fde8e8; color: #eb3639; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;">Leader</span>
+                            <span style="background: #fde8e8; color: #eb3639; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;"><?= __('role_leader') ?></span>
+                        <?php elseif($m['role'] == 'Manager'): ?>
+                            <span style="background: #fef5e6; color: #d9730d; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;"><?= __('role_manager') ?></span>
+                        <?php elseif($m['role'] == 'Viewer'): ?>
+                            <span style="background: #f1f1f0; color: #787774; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;"><?= __('role_viewer') ?></span>
                         <?php else: ?>
-                            <span style="background: #e8f3fb; color: #0b6e99; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;">Member</span>
+                            <span style="background: #e8f3fb; color: #0b6e99; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;"><?= __('role_member') ?></span>
                         <?php endif; ?>
 
+                        <!-- CHỈ LEADER MỚI ĐƯỢC ĐUỔI NGƯỜI (VÀ KHÔNG ĐƯỢC ĐUỔI CHÍNH MÌNH) -->
                         <?php if ($isLeader && $m['id'] != $_SESSION['user_id']): ?>
                             <a href="index.php?action=kick-member&team_id=<?= $team['id'] ?>&user_id=<?= $m['id'] ?>" 
                                 onclick="return confirm('<?= __('confirm_kick_msg') ?>');" 
@@ -63,12 +77,23 @@ foreach($members as $m) {
         </table>
     </div>
 
-    <?php if ($isLeader): ?>
+    <!-- KHU VỰC THÊM THÀNH VIÊN (DÀNH CHO LEADER & MANAGER) -->
+    <?php if ($canManageProject): ?>
     <div style="background: white; padding: 25px; border-radius: 10px; border: 1px solid #e3e2e0; height: fit-content;">
         <h2 style="font-size: 1.1rem; margin: 0 0 15px 0; color: #37352f;"><i class="fas fa-user-plus"></i> <?= __('add_teammate_title') ?></h2>
         <form action="index.php?action=invite-member" method="POST">
             <input type="hidden" name="team_id" value="<?= $team['id'] ?>">
             <input type="email" name="email" placeholder="<?= __('email_placeholder') ?>" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 15px; box-sizing: border-box;">
+            
+            <select name="role" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 15px; box-sizing: border-box;">
+                <option value="Member"><?= __('role_member') ?></option>
+                <option value="Viewer"><?= __('role_viewer') ?></option>
+                <!-- Chỉ Leader mới được cấp quyền Manager cho người khác -->
+                <?php if($isLeader): ?>
+                    <option value="Manager"><?= __('role_manager') ?></option>
+                <?php endif; ?>
+            </select>
+
             <button type="submit" style="width: 100%; background: #2383e2; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: 500; cursor: pointer;"><?= __('btn_send_invite') ?></button>
         </form>
     </div>
@@ -78,7 +103,9 @@ foreach($members as $m) {
 <div style="background: white; padding: 25px; border-radius: 10px; border: 1px solid #e3e2e0;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2 style="font-size: 1.2rem; margin: 0; color: #37352f;"><i class="fas fa-project-diagram" style="color: #0f7b6c;"></i> <?= __('running_projects_title') ?></h2>
-        <?php if ($isLeader): ?>
+        
+        <!-- NÚT TẠO DỰ ÁN DÀNH CHO LEADER & MANAGER -->
+        <?php if ($canManageProject): ?>
         <button onclick="document.getElementById('projectModal').style.display='block'" style="background: #0f7b6c; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: 500;">
             <?= __('btn_create_project') ?>
         </button>
@@ -92,6 +119,7 @@ foreach($members as $m) {
             <?php foreach($projects as $p): ?>
                 <div style="position: relative; border: 1px solid #e3e2e0; border-radius: 8px; padding: 20px; transition: 0.2s; background: white;">
                     
+                    <!-- CHỈ LEADER MỚI ĐƯỢC XÓA DỰ ÁN -->
                     <?php if ($isLeader): ?>
                         <a href="index.php?action=delete-project&project_id=<?= $p['id'] ?>&team_id=<?= $team['id'] ?>" 
                             onclick="return confirm('<?= __('confirm_delete_project_msg') ?>');" 
@@ -129,6 +157,7 @@ foreach($members as $m) {
     </div>
 </div>
 
+<?php if ($canManageProject): ?>
 <div id="projectModal" style="display:none; position:fixed; z-index:100; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.4);">
     <div style="background:white; margin:5% auto; padding:30px; width:500px; border-radius:8px;">
         <h2 style="margin-top:0;"><?= __('modal_create_project_title') ?></h2>
@@ -160,7 +189,7 @@ foreach($members as $m) {
                 <label><?= __('lbl_project_manager') ?></label>
                 <select name="manager_id" required class="form-control" style="width: 100%; padding: 8px; box-sizing: border-box;">
                     <?php foreach($members as $m): ?>
-                        <option value="<?= $m['id'] ?>"><?= htmlspecialchars($m['fullname']) ?> <?= ($m['role'] == 'Leader') ? '(Leader)' : '' ?></option>
+                        <option value="<?= $m['id'] ?>"><?= htmlspecialchars($m['fullname']) ?> (<?= $m['role'] ?>)</option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -172,6 +201,7 @@ foreach($members as $m) {
         </form>
     </div>
 </div>
+<?php endif; ?>
 
 <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e3e2e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-top: 30px; margin-bottom: 30px;">
     <div style="margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px;">
@@ -188,7 +218,6 @@ foreach($members as $m) {
         <?php else: ?>
             <?php foreach($teamComments as $c): 
                 $isMe = ($c['user_id'] == $_SESSION['user_id']);
-                // HIỂN THỊ AVATAR NGƯỜI CHAT
                 $chatAvatar = $c['avatar'] ?? '';
                 $chatAvatarUrl = (!empty($chatAvatar) && $chatAvatar !== 'default.png') 
                     ? '/task_manager/public/uploads/' . htmlspecialchars($chatAvatar) 
@@ -215,6 +244,8 @@ foreach($members as $m) {
         <?php endif; ?>
     </div>
 
+    <!-- KIỂM TRA QUYỀN CHAT -->
+    <?php if($canChat): ?>
     <form action="index.php?action=add-team-message" method="POST" enctype="multipart/form-data" style="background: #fdfdfc; padding: 15px; border-radius: 8px; border: 1px solid #e3e2e0;">
         <input type="hidden" name="team_id" value="<?= $team['id'] ?>">
         <textarea name="content" rows="2" placeholder="<?= __('chat_input_placeholder') ?>" style="width: 100%; border: 1px solid #ccc; border-radius: 6px; padding: 10px; margin-bottom: 10px; resize: none; font-family: inherit;"></textarea>
@@ -223,6 +254,11 @@ foreach($members as $m) {
             <button type="submit" style="background: #2383e2; color: white; border: none; padding: 8px 25px; border-radius: 6px; cursor: pointer; font-weight: 500;"><i class="fas fa-paper-plane"></i> <?= __('btn_send_message') ?></button>
         </div>
     </form>
+    <?php else: ?>
+    <div style="padding: 15px; background: #f1f1f0; text-align: center; color: #787774; border-radius: 8px; border: 1px solid #e3e2e0;">
+        <i class="fas fa-lock"></i> <?= __('viewer_chat_block') ?>
+    </div>
+    <?php endif; ?>
 </div>
 
 <script>

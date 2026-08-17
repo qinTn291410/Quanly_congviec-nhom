@@ -326,4 +326,11 @@ return [
     'sys_notif_label' => 'System Notifications',
     'sys_notif_desc' => 'Receive email notifications for upcoming tasks',
     'btn_save_settings' => 'Save Settings',
+
+    'role_leader' => 'Leader',
+    'role_manager' => 'Manager',
+    'role_member' => 'Member',
+    'role_viewer' => 'Viewer',
+    'viewer_chat_block' => 'You are in Viewer mode and cannot send messages.',
+    'lbl_role_assign' => 'Assign Role',
 ];

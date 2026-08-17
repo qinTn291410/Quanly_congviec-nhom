@@ -326,4 +326,11 @@ return [
     'sys_notif_label' => 'Thông báo hệ thống',
     'sys_notif_desc' => 'Nhận thông báo qua Email khi có việc sắp tới hạn',
     'btn_save_settings' => 'Lưu cài đặt',
+    
+    'role_leader' => 'Leader',
+    'role_manager' => 'Manager',
+    'role_member' => 'Member',
+    'role_viewer' => 'Viewer',
+    'viewer_chat_block' => 'Bạn đang ở chế độ Viewer (Khách xem), không thể gửi tin nhắn.',
+    'lbl_role_assign' => 'Phân quyền',
 ];

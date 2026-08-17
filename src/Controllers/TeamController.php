@@ -3,12 +3,37 @@ namespace Tinhu\TaskManager\Controllers;
 
 require_once PROJECT_ROOT . '/src/Models/TeamModel.php';
 use Tinhu\TaskManager\Models\TeamModel;
+use Tinhu\TaskManager\Core\Database;
 
 class TeamController {
     private $teamModel;
 
     public function __construct() {
         $this->teamModel = new TeamModel();
+    }
+
+    private function getUserRole($teamId) {
+        if (!$teamId) return 'Viewer';
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare("SELECT role FROM team_members WHERE team_id = ? AND user_id = ?");
+        $stmt->execute([$teamId, $_SESSION['user_id']]);
+        return $stmt->fetchColumn() ?: 'Viewer';
+    }
+
+    private function getTeamIdByProject($projectId) {
+        if (!$projectId) return 0;
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare("SELECT team_id FROM projects WHERE id = ?");
+        $stmt->execute([$projectId]);
+        return $stmt->fetchColumn();
+    }
+
+    private function getTeamIdByTask($taskId) {
+        if (!$taskId) return 0;
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare("SELECT p.team_id FROM team_tasks tt JOIN projects p ON tt.project_id = p.id WHERE tt.id = ?");
+        $stmt->execute([$taskId]);
+        return $stmt->fetchColumn();
     }
 
     public function index() {
@@ -65,10 +90,31 @@ class TeamController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $teamId = $_POST['team_id'];
             $email = trim($_POST['email']);
-            
+            $roleToAssign = $_POST['role'] ?? 'Member';
+
+            $myRole = $this->getUserRole($teamId);
+            if (!in_array($myRole, ['Leader', 'Manager'])) {
+                $_SESSION['system_alert'] = "Lỗi bảo mật: Bạn không có quyền mời thành viên!";
+                header('Location: index.php?action=team-detail&id=' . $teamId); exit();
+            }
+            if ($myRole === 'Manager' && in_array($roleToAssign, ['Leader', 'Manager'])) {
+                $_SESSION['system_alert'] = "Lỗi bảo mật: Manager chỉ có thể mời Member hoặc Viewer!";
+                header('Location: index.php?action=team-detail&id=' . $teamId); exit();
+            }
+
             $result = $this->teamModel->inviteMember($teamId, $email);
             if ($result === true) {
-                $_SESSION['system_alert'] = "Đã thêm thành viên thành công!";
+                $db = Database::getInstance()->getConnection();
+                $stmt = $db->prepare("SELECT id FROM users WHERE email = ?");
+                $stmt->execute([$email]);
+                $invitedUserId = $stmt->fetchColumn();
+                
+                if ($invitedUserId) {
+                    $stmtUpdate = $db->prepare("UPDATE team_members SET role = ? WHERE team_id = ? AND user_id = ?");
+                    $stmtUpdate->execute([$roleToAssign, $teamId, $invitedUserId]);
+                }
+
+                $_SESSION['system_alert'] = "Đã thêm thành viên và cấp quyền $roleToAssign thành công!";
             } else {
                 $_SESSION['system_alert'] = $result; 
             }
@@ -80,6 +126,13 @@ class TeamController {
     public function createProject() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $teamId = $_POST['team_id'];
+
+            $myRole = $this->getUserRole($teamId);
+            if (!in_array($myRole, ['Leader', 'Manager'])) {
+                $_SESSION['system_alert'] = "Lỗi bảo mật: Chỉ Leader hoặc Manager mới được tạo dự án!";
+                header('Location: index.php?action=team-detail&id=' . $teamId); exit();
+            }
+
             $name = $_POST['name'];
             $desc = $_POST['description'];
             $startDate = $_POST['start_date'];
@@ -110,7 +163,7 @@ class TeamController {
                 break;
             }
         }
-        $canEdit = ($currentUserRole == 'Leader' || $project['manager_id'] == $userId);
+        $canEdit = ($currentUserRole == 'Leader' || $currentUserRole == 'Manager' || $project['manager_id'] == $userId);
         $filterAssignee = $_GET['assignee'] ?? '';
         $sort = $_GET['sort'] ?? '';
 
@@ -144,7 +197,7 @@ class TeamController {
             }
         }
         if ($dueSoon > 0 && !isset($_SESSION['deadline_alerted_'.$projectId])) {
-            $_SESSION['system_alert'] = "NHẮC NHỞ DEADLINE:\\n\\nDự án này đang có $dueSoon công việc sắp đến hạn (trong vòng 48h tới). Hãy vào xử lý ngay để tránh bị quá hạn nhé!";
+            $_SESSION['system_alert'] = "NHẮC NHỞ DEADLINE:\\n\\nDự án này đang có $dueSoon công việc sắp đến hạn. Hãy xử lý ngay!";
             $_SESSION['deadline_alerted_'.$projectId] = true;
         }
         require_once PROJECT_ROOT . '/views/teams/kanban.php';
@@ -153,6 +206,12 @@ class TeamController {
     public function addTeamTask() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $projectId = $_POST['project_id'];
+            $teamId = $this->getTeamIdByProject($projectId);
+            
+            if ($this->getUserRole($teamId) === 'Viewer') {
+                die("Lỗi bảo mật: Viewer không có quyền phân công việc!");
+            }
+
             $data = [
                 'project_id'  => $projectId,
                 'assigned_to' => $_POST['assigned_to'] ?: null, 
@@ -164,12 +223,12 @@ class TeamController {
             $this->teamModel->createTeamTask($data);
             
             if (!empty($data['assigned_to']) && $data['assigned_to'] != $_SESSION['user_id']) {
-                $db = \Tinhu\TaskManager\Core\Database::getInstance()->getConnection();
-                $msg = "CÓ VIỆC MỚI: Sếp vừa giao cho bạn việc '" . $data['title'] . "'";
+                $db = Database::getInstance()->getConnection();
+                $msg = "CÓ VIỆC MỚI: Bạn vừa được giao việc '" . $data['title'] . "'";
                 $db->prepare("INSERT INTO notifications (user_id, message) VALUES (?, ?)")->execute([$data['assigned_to'], $msg]);
             }
 
-            $_SESSION['system_alert'] = "Đã phân công việc: '" . $data['title'] . "' thành công!";
+            $_SESSION['system_alert'] = "Đã phân công việc thành công!";
             header("Location: index.php?action=project-kanban&id=" . $projectId);
             exit();
         }
@@ -179,18 +238,23 @@ class TeamController {
         $taskId = $_GET['task_id'] ?? 0;
         $projectId = $_GET['project_id'] ?? 0;
         $status = $_GET['status'] ?? 'Backlog';
+        $teamId = $this->getTeamIdByProject($projectId);
         
+        if ($this->getUserRole($teamId) === 'Viewer') {
+            die("Lỗi bảo mật: Viewer không được phép thay đổi trạng thái!");
+        }
+
         if ($taskId && $projectId) {
             $this->teamModel->updateTeamTaskStatus($taskId, $status);
             
             $taskInfo = $this->teamModel->getTeamTaskById($taskId);
             if (!empty($taskInfo['assigned_to']) && $taskInfo['assigned_to'] != $_SESSION['user_id']) {
-                $db = \Tinhu\TaskManager\Core\Database::getInstance()->getConnection();
-                $msg = "CẬP NHẬT: Công việc '" . $taskInfo['title'] . "' vừa bị chuyển trạng thái thành: " . strtoupper($status);
+                $db = Database::getInstance()->getConnection();
+                $msg = "CẬP NHẬT: Công việc '" . $taskInfo['title'] . "' vừa chuyển sang: " . strtoupper($status);
                 $db->prepare("INSERT INTO notifications (user_id, message) VALUES (?, ?)")->execute([$taskInfo['assigned_to'], $msg]);
             }
 
-            $_SESSION['system_alert'] = "Đã cập nhật tiến độ công việc sang: " . strtoupper($status);
+            $_SESSION['system_alert'] = "Đã cập nhật tiến độ sang: " . strtoupper($status);
         }
         header("Location: index.php?action=project-kanban&id=" . $projectId);
         exit();
@@ -199,6 +263,12 @@ class TeamController {
     public function editTeamTask() {
         $taskId = $_GET['id'] ?? 0;
         $projectId = $_GET['project_id'] ?? 0;
+        $teamId = $this->getTeamIdByProject($projectId);
+        
+
+        if ($this->getUserRole($teamId) === 'Viewer') {
+            die("Lỗi bảo mật: Viewer không được phép chỉnh sửa!");
+        }
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $data = [
@@ -222,6 +292,12 @@ class TeamController {
     public function deleteTeamTask() {
         $taskId = $_GET['id'] ?? 0;
         $projectId = $_GET['project_id'] ?? 0;
+        $teamId = $this->getTeamIdByProject($projectId);
+        
+        if ($this->getUserRole($teamId) === 'Viewer') {
+            die("Lỗi bảo mật: Viewer không được phép xóa việc!");
+        }
+
         if ($taskId) {
             $this->teamModel->deleteTeamTask($taskId);
         }
@@ -246,6 +322,12 @@ class TeamController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $taskId = $_POST['task_id'];
             $projectId = $_POST['project_id'];
+            $teamId = $this->getTeamIdByProject($projectId);
+            
+            if ($this->getUserRole($teamId) === 'Viewer') {
+                die("Lỗi bảo mật: Viewer bị cấm chat!");
+            }
+
             $userId = $_SESSION['user_id'];
             $content = trim($_POST['content']);
             $fileUrl = null;
@@ -269,38 +351,15 @@ class TeamController {
         }
     }
 
-    public function kickMember() {
-        $teamId = $_GET['team_id'] ?? 0;
-        $userId = $_GET['user_id'] ?? 0;
-        if ($teamId && $userId && $userId != $_SESSION['user_id']) {
-            $this->teamModel->removeTeamMember($teamId, $userId);
-        }
-        header("Location: index.php?action=team-detail&id=" . $teamId);
-        exit();
-    }
-
-    public function removeProject() {
-        $projectId = $_GET['project_id'] ?? 0;
-        $teamId = $_GET['team_id'] ?? 0;
-        if ($projectId) {
-            $this->teamModel->deleteProject($projectId);
-        }
-        header("Location: index.php?action=team-detail&id=" . $teamId);
-        exit();
-    }
-
-    public function removeTeam() {
-        $teamId = $_GET['id'] ?? 0;
-        if ($teamId) {
-            $this->teamModel->deleteTeam($teamId);
-        }
-        header("Location: index.php?action=teams");
-        exit();
-    }
-
     public function addProjectComment() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $projectId = $_POST['project_id'];
+            $teamId = $this->getTeamIdByProject($projectId);
+            
+            if ($this->getUserRole($teamId) === 'Viewer') {
+                die("Lỗi bảo mật: Viewer bị cấm chat!");
+            }
+
             $userId = $_SESSION['user_id'];
             $content = trim($_POST['content']);
             $fileUrl = null;
@@ -324,6 +383,11 @@ class TeamController {
     public function addTeamMessage() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $teamId = $_POST['team_id'];
+            
+            if ($this->getUserRole($teamId) === 'Viewer') {
+                die("Lỗi bảo mật: Viewer bị cấm chat!");
+            }
+
             $userId = $_SESSION['user_id'];
             $content = trim($_POST['content']);
             $fileUrl = null;
@@ -344,9 +408,62 @@ class TeamController {
         }
     }
 
+    public function kickMember() {
+        $teamId = $_GET['team_id'] ?? 0;
+        $userId = $_GET['user_id'] ?? 0;
+        
+        // CHỈ LEADER MỚI CÓ QUYỀN ĐUỔI NGƯỜI
+        if ($this->getUserRole($teamId) !== 'Leader') {
+            $_SESSION['system_alert'] = "Lỗi bảo mật: Chỉ Leader mới có quyền đuổi thành viên!";
+            header("Location: index.php?action=team-detail&id=" . $teamId);
+            exit();
+        }
+
+        if ($teamId && $userId && $userId != $_SESSION['user_id']) {
+            $this->teamModel->removeTeamMember($teamId, $userId);
+        }
+        header("Location: index.php?action=team-detail&id=" . $teamId);
+        exit();
+    }
+
+    public function removeProject() {
+        $projectId = $_GET['project_id'] ?? 0;
+        $teamId = $_GET['team_id'] ?? 0;
+        
+        // CHỈ LEADER MỚI CÓ QUYỀN XÓA DỰ ÁN
+        if ($this->getUserRole($teamId) !== 'Leader') {
+            $_SESSION['system_alert'] = "Lỗi bảo mật: Chỉ Leader mới có quyền xóa dự án!";
+            header("Location: index.php?action=team-detail&id=" . $teamId);
+            exit();
+        }
+
+        if ($projectId) {
+            $this->teamModel->deleteProject($projectId);
+        }
+        header("Location: index.php?action=team-detail&id=" . $teamId);
+        exit();
+    }
+
+    public function removeTeam() {
+        $teamId = $_GET['id'] ?? 0;
+        
+        // CHỈ LEADER MỚI CÓ QUYỀN XÓA NHÓM
+        if ($this->getUserRole($teamId) !== 'Leader') {
+            $_SESSION['system_alert'] = "Lỗi bảo mật: Chỉ Leader mới có quyền xóa nhóm!";
+            header("Location: index.php?action=teams");
+            exit();
+        }
+
+        if ($teamId) {
+            $this->teamModel->deleteTeam($teamId);
+        }
+        header("Location: index.php?action=teams");
+        exit();
+    }
+
     public function exportExcel() {
         $projectId = $_GET['project_id'] ?? 0;
-        $db = \Tinhu\TaskManager\Core\Database::getInstance()->getConnection();
+        $db = Database::getInstance()->getConnection();
         
         $stmtProj = $db->prepare("SELECT name FROM projects WHERE id = ?");
         $stmtProj->execute([$projectId]);

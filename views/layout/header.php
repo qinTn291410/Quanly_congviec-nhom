@@ -17,7 +17,6 @@ if (!function_exists('__')) {
 }
 
 $dueCount = 0;
-// 1. Tạo URL avatar mặc định nếu chưa có ảnh
 $userAvatarPath = 'https://ui-avatars.com/api/?name=' . urlencode($fullname) . '&background=random';
 
 try {
@@ -34,7 +33,6 @@ try {
 
     $dueCount = $countPersonal + $countTeam;
 
-    // 2. Lấy Avatar từ Database
     $stmtAvatar = $db->prepare("SELECT avatar FROM users WHERE id = ?");
     $stmtAvatar->execute([$uid]);
     $dbAvatar = $stmtAvatar->fetchColumn();
@@ -57,7 +55,10 @@ try {
             .main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
             body { background: white; }
         }
-    </style>
+    </style>  
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2383e2">
+    <link rel="apple-touch-icon" href="doflow-logo.jpg">  
 </head>
 <body>
 <div class="workspace-wrapper">
@@ -66,7 +67,6 @@ try {
         <div class="workspace-header">
             <a href="index.php?action=profile" style="display: flex; align-items: center; gap: 10px; padding: 10px; text-decoration: none; color: inherit; border-radius: 6px; margin-bottom: 20px;">
                 
-                <!-- 3. HIỂN THỊ AVATAR TRÊN MENU -->
                 <img src="<?= $userAvatarPath ?>" style="width: 32px; height: 32px; min-width: 32px; border-radius: 6px; object-fit: cover; border: 1px solid #e3e2e0;">
                 
                 <div style="font-weight: 600; font-size: 0.95rem; line-height: 1.2;">
@@ -125,4 +125,17 @@ try {
                     .catch(err => console.error('Lỗi quét Radar:', err));
                 }, 2000);
             });
+        </script>
+
+        <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker đã kích hoạt thành công! Phạm vi: ', registration.scope);
+                    }, err => {
+                        console.log('Lỗi đăng ký ServiceWorker: ', err);
+                    });
+            });
+        }
         </script>

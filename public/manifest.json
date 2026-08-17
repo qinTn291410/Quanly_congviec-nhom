@@ -1,0 +1,22 @@
+{
+  "name": "DOFLOW - Quản Lý Công Việc",
+  "short_name": "DOFLOW",
+  "description": "Ứng dụng quản lý công việc và đời sống hiệu quả.",
+  "start_url": "./index.php?action=dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2383e2",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./doflow-logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "./doflow-logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}

@@ -61,6 +61,12 @@
             border-bottom: <?= ($view == 'chat') ? '3px solid #2383e2' : '3px solid transparent' ?>;">
         <i class="fas fa-comments"></i> <?= __('tab_general_chat') ?>
     </a>
+    <a href="index.php?action=project-kanban&id=<?= $project['id'] ?>&view=log" 
+        style="text-decoration: none; font-size: 1.05rem; font-weight: 500; padding-bottom: 12px; margin-bottom: -2px; transition: 0.2s; 
+            color: <?= ($view == 'log') ? '#37352f' : '#787774' ?>; 
+            border-bottom: <?= ($view == 'log') ? '3px solid #2383e2' : '3px solid transparent' ?>;">
+        <i class="fas fa-history"></i> <?= __('tab_activity_log') ?>  
+    </a>
 </div>
 
 <?php if ($view == 'dashboard'): ?>
@@ -195,7 +201,6 @@
             <?php else: ?>
                 <?php foreach($projectComments as $c): 
                     $isMe = ($c['user_id'] == $_SESSION['user_id']);
-                    // HIỂN THỊ AVATAR NGƯỜI CHAT
                     $chatAvatar = $c['avatar'] ?? '';
                     $chatAvatarUrl = (!empty($chatAvatar) && $chatAvatar !== 'default.png') 
                         ? '/task_manager/public/uploads/' . htmlspecialchars($chatAvatar) 
@@ -209,7 +214,20 @@
                                 <strong><?= $isMe ? __('you_tag') : htmlspecialchars($c['fullname']) ?></strong> • <?= date('H:i d/m', strtotime($c['created_at'])) ?>
                             </div>
                             <div style="background: <?= $isMe ? '#e8f3fb' : '#f7f7f5' ?>; padding: 12px 16px; border-radius: 12px; font-size: 0.95rem; color: #37352f; border: 1px solid <?= $isMe ? '#b9d5e5' : '#e3e2e0' ?>;">
-                                <?php if(!empty($c['content'])) echo nl2br(htmlspecialchars($c['content'])); ?>
+                                <?php 
+                                if(!empty($c['content'])) {
+                                    $chatContent = htmlspecialchars($c['content']);
+                                    if (!empty($members)) {
+                                        foreach($members as $mem) {
+                                            $mention = '@' . $mem['fullname'];
+                                            $highlight = '<span style="color:#2383e2; font-weight:bold; background:#e8f3fb; padding:2px 6px; border-radius:4px;">' . htmlspecialchars($mention) . '</span>';
+                                            $chatContent = str_ireplace(htmlspecialchars($mention), $highlight, $chatContent);
+                                        }
+                                    }
+                                    echo nl2br($chatContent); 
+                                }
+                                ?>
+                                
                                 <?php if(!empty($c['file_url'])): ?>
                                     <div style="margin-top: <?= !empty($c['content'])?'10px':'0'?>; padding-top: <?= !empty($c['content'])?'10px':'0'?>; border-top: <?= !empty($c['content'])?'1px dashed #ccc':'none'?>;">
                                         <a href="/task_manager/public/uploads/teams/<?= htmlspecialchars($c['file_url']) ?>" target="_blank" style="color: #2383e2; text-decoration: none; font-weight: 500;"><i class="fas fa-paperclip"></i> <?= htmlspecialchars($c['file_url']) ?></a>
@@ -254,6 +272,28 @@
                 <button type="submit" style="background: #2383e2; color: white; border: none; padding: 8px 25px; border-radius: 6px; cursor: pointer; font-weight: 500;"><i class="fas fa-paper-plane"></i> <?= __('btn_send_to_team') ?></button>
             </div>
         </form>
+    </div>
+
+<?php elseif ($view == 'log'): ?>
+    <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e3e2e0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); max-width: 900px; margin: 0 auto;">
+        <h2 style="margin: 0 0 20px 0; color: #37352f; font-size: 1.4rem;"><i class="fas fa-history" style="color: #787774;"></i> <?= __('log_system_title') ?></h2>
+        <div class="custom-scroll" style="max-height: 500px; overflow-y: auto;">
+            <?php if(empty($logs)): ?>
+                <p style="color: #787774; text-align: center; margin-top: 30px;"> <?= __('log_empty_msg') ?> </p>
+            <?php else: ?>
+                <ul style="list-style: none; padding: 0; margin: 0; border-left: 2px solid #e3e2e0; margin-left: 10px;">
+                    <?php foreach($logs as $log): ?>
+                        <li style="margin-bottom: 20px; padding-left: 20px; position: relative;">
+                            <div style="position: absolute; left: -6px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: #2383e2; border: 2px solid white;"></div>
+                            <div style="font-size: 0.85rem; color: #787774; margin-bottom: 3px;"><?= date('H:i d/m/Y', strtotime($log['created_at'])) ?></div>
+                            <div style="font-size: 0.95rem; color: #37352f; line-height: 1.5;">
+                                <strong style="color: #0b6e99;"><?= htmlspecialchars($log['fullname']) ?></strong> <?= $log['action'] ?>
+                            </div>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+        </div>
     </div>
 
 <?php else: ?>
@@ -484,5 +524,56 @@
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const textareas = document.querySelectorAll('textarea[name="content"]');
+    const membersList = <?= json_encode(array_column($members ?? [], 'fullname')) ?>;
+    
+    textareas.forEach(textarea => {
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'relative';
+        textarea.parentNode.insertBefore(wrapper, textarea);
+        wrapper.appendChild(textarea);
+
+        const popup = document.createElement('div');
+        popup.style.cssText = 'display:none; position:absolute; bottom:100%; left:0; background:white; border:1px solid #ccc; border-radius:6px; box-shadow:0 4px 12px rgba(0,0,0,0.1); max-height:150px; overflow-y:auto; z-index:1000; width:250px; margin-bottom: 5px;';
+        wrapper.appendChild(popup);
+
+        textarea.addEventListener('input', function(e) {
+            const val = this.value;
+            const cursorPos = this.selectionStart;
+            const textBeforeCursor = val.substring(0, cursorPos);
+            const match = textBeforeCursor.match(/@([a-zA-ZÀ-ỹ\s]*)$/); 
+
+            if (match) {
+                const query = match[1].toLowerCase();
+                const filtered = membersList.filter(m => m.toLowerCase().includes(query));
+                
+                if (filtered.length > 0) {
+                    popup.innerHTML = '';
+                    filtered.forEach(m => {
+                        const item = document.createElement('div');
+                        item.style.cssText = 'padding:8px 12px; cursor:pointer; border-bottom:1px solid #eee; font-size:0.9rem; color:#37352f;';
+                        item.innerHTML = `<i class="fas fa-user-circle" style="color:#2383e2; margin-right:5px;"></i> ${m}`;
+                        item.onmouseenter = () => item.style.background = '#f7f7f5';
+                        item.onmouseleave = () => item.style.background = 'white';
+                        item.onclick = () => {
+                            const newVal = val.substring(0, cursorPos - match[0].length) + '@' + m + ' ' + val.substring(cursorPos);
+                            textarea.value = newVal;
+                            popup.style.display = 'none';
+                            textarea.focus();
+                        };
+                        popup.appendChild(item);
+                    });
+                    popup.style.display = 'block';
+                } else { popup.style.display = 'none'; }
+            } else { popup.style.display = 'none'; }
+        });
+        
+        document.addEventListener('click', e => { if(!wrapper.contains(e.target)) popup.style.display = 'none'; });
+    });
+});
+</script>
 
 <?php require_once PROJECT_ROOT . '/views/layout/footer.php'; ?>

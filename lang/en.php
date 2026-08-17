@@ -333,4 +333,8 @@ return [
     'role_viewer' => 'Viewer',
     'viewer_chat_block' => 'You are in Viewer mode and cannot send messages.',
     'lbl_role_assign' => 'Assign Role',
+
+    'tab_activity_log' => 'Activity Log',
+    'log_system_title' => 'System Log',
+    'log_empty_msg' => 'No activities recorded yet.',
 ];

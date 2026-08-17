@@ -333,4 +333,8 @@ return [
     'role_viewer' => 'Viewer',
     'viewer_chat_block' => 'Bạn đang ở chế độ Viewer (Khách xem), không thể gửi tin nhắn.',
     'lbl_role_assign' => 'Phân quyền',
+
+    'tab_activity_log' => 'Nhật ký hoạt động',
+    'log_system_title' => 'Nhật ký hệ thống',
+    'log_empty_msg' => 'Chưa có hoạt động nào được ghi nhận.',
 ];
